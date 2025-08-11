@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Galerie Photos - Stockage Local</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header with hamburger menu -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-camera-retro"></i>
+            <h1>Galerie Photos</h1>
+        </div>
+        <div class="menu-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Sidebar menu -->
+    <div class="sidebar">
+        <div class="sidebar-item" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <span>Thème Sombre</span>
+        </div>
+        <div class="sidebar-item" id="clear-all">
+            <i class="fas fa-trash-alt"></i>
+            <span>Tout Supprimer</span>
+        </div>
+        <div class="sidebar-item" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="container">
+        <div class="intro">
+            <h2>Stockez vos photos en toute sécurité</h2>
+            <p>Ajoutez vos photos et elles seront sauvegardées localement sur votre appareil.</p>
+        </div>
+
+        <div class="upload-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h3>Ajouter des photos</h3>
+            <p>Sélectionnez une ou plusieurs images (JPG, PNG)</p>
+            <button class="upload-btn" id="upload-trigger">
+                <i class="fas fa-plus"></i> Choisir des photos
+            </button>
+            <input type="file" id="file-input" accept="image/*" multiple>
+        </div>
+
+        <div class="gallery-section">
+            <h2>Votre Collection</h2>
+            <div class="gallery" id="gallery">
+                <!-- Photos will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Ko-fi button -->
+    <div class="kofi-container">
+        <a href="https://ko-fi.com/karlito08" target="_blank" class="kofi-btn">
+            <i class="fas fa-coffee"></i> Supportez-moi
+        </a>
+    </div>
+
+    <!-- Confirmation modal -->
+    <div class="modal" id="confirmation-modal">
+        <div class="modal-content">
+            <h3>Confirmer la suppression</h3>
+            <p>Êtes-vous sûr de vouloir supprimer toutes vos photos ? Cette action est irréversible.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm-btn" id="confirm-delete">Supprimer</button>
+                <button class="modal-btn cancel-btn" id="cancel-delete">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image preview modal -->
+    <div class="modal" id="image-modal">
+        <div class="image-modal-content">
+            <span class="close-modal">&times;</span>
+            <img id="modal-image" src="" alt="Preview">
+            <div class="image-actions">
+                <button class="modal-btn download-btn" id="download-image">
+                    <i class="fas fa-download"></i> Télécharger
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
