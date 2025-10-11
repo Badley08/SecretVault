@@ -400,4 +400,46 @@ angular.module('secretVaultApp', [])
         toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg border backdrop-blur-lg transform translate-x-full transition-transform duration-300 ${
             type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
             type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-            type === 'warning' ? 'bg-yellow-500/10 border-y
+            type === 'warning' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+            'bg-blue-500/10 border-blue-500/20 text-blue-400'
+        }`;
+        
+        toast.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <i class="fas ${
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'error' ? 'fa-exclamation-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    'fa-info-circle'
+                }"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Animation d'entrée
+        $timeout(() => {
+            toast.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Suppression automatique
+        $timeout(() => {
+            toast.style.transform = 'translateX(100%)';
+            $timeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    };
+    
+    ctrl.showLoading = function() {
+        document.getElementById('loading').style.display = 'flex';
+    };
+    
+    ctrl.hideLoading = function() {
+        document.getElementById('loading').style.display = 'none';
+    };
+    
+    // Initialisation
+    ctrl.init();
+});
