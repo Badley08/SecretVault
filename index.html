@@ -1,154 +1,332 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0066ff">
-  <meta name="description" content="SecretVault : Galerie de photos sécurisée avec stockage local et cloud.">
-  <meta name="keywords" content="PWA, galerie photos, sécurisé, cloud, offline">
-  <meta name="author" content="SecretVault Team">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="SecretVault">
-  
-  <title>SecretVault - Galerie Sécurisée</title>
-  
-  <link rel="icon" type="image/png" href="secretvault.png">
-  <link rel="apple-touch-icon" href="secretvault.png">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SecretVault - Stockez vos fichiers en toute sécurité">
+    <meta name="author" content="Karlito">
+    <meta name="email" content="karlluberisse1308@gmail.com">
+    <meta name="theme-color" content="#1976d2">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <title>SecretVault - Stockage Sécurisé</title>
+    
+    <style>
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <!-- Navigation Menu -->
-    <nav class="hamburger-menu">
-      <button class="menu-toggle" id="menuToggle">
-        <i class="fas fa-bars"></i>
-      </button>
-      <div class="menu-links" id="menuLinks">
-        <a href="https://badley08.github.io/Karlito" target="_blank" rel="noopener noreferrer">
-          <i class="fas fa-briefcase"></i> Mon Portfolio
-        </a>
-        <a href="https://ko-fi.com/karlito08" target="_blank" rel="noopener noreferrer">
-          <i class="fas fa-heart"></i> Me soutenir sur Ko-fi
-        </a>
-      </div>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation avec menu hamburger -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="secretvault.png" alt="SecretVault Logo" class="h-8 w-8" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMTk3NmQyIi8+CjxwYXRoIGQ9Ik0xNiA4QzE0LjUgOCAxMy41IDkgMTMuNSAxMC41QzEzLjUgMTIgMTQuNSAxMyAxNiAxM0MxNy41IDEzIDE4LjUgMTIgMTguNSAxMC41QzE4LjUgOSAxNy41IDggMTYgOFpNMTYgMTVDMTQgMTUgMTIuNSAxNi41IDEyLjUgMTguNUwxMi41IDI0QzEyLjUgMjQuNSAxMi41IDI1IDEzIDI1SDE5QzE5LjUgMjUgMTkuNSAyNC41IDE5LjUgMjRMMTkuNSAxOC41QzE5LjUgMTYuNSAxOCAxNSAxNiAxNVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo='">
+                <h1 class="text-xl font-bold">SecretVault</h1>
+            </div>
+            
+            <!-- Menu Hamburger -->
+            <div class="relative">
+                <button id="menuBtn" class="p-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                    <a href="https://badley08.github.io/Karlito" target="_blank" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">
+                        <i class="fas fa-user mr-2"></i>Mon Portfolio
+                    </a>
+                    <a href="https://ko-fi.com/karlito08" target="_blank" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">
+                        <i class="fas fa-heart mr-2"></i>Me soutenir
+                    </a>
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <!-- Authentication Modal -->
-    <div class="modal" id="authModal">
-      <div class="modal-content">
-        <img src="secretvault.png" alt="SecretVault Logo" class="logo-modal">
-        <h2>SecretVault</h2>
-        <p class="subtitle">Galerie Sécurisée PWA</p>
+    <!-- Application Angular -->
+    <div ng-app="secretVaultApp" ng-controller="MainController as $ctrl" class="container mx-auto p-4">
         
-        <!-- Quick Local Mode -->
-        <div class="storage-choice-prompt">
-          <p>💨 Accès Rapide:</p>
-          <button type="button" class="choice-btn selected" data-storage="local" id="btnLocalMode">
-            <i class="fas fa-mobile-alt"></i> Mode Local
-          </button>
+        <!-- Écran de chargement -->
+        <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
+            <div class="loading-spinner"></div>
+            <p class="text-gray-600 mt-4">Chargement de SecretVault...</p>
         </div>
 
-        <div class="separator">
-          <span>ou</span>
+        <!-- Composant de connexion -->
+        <div id="loginView" class="fade-in" ng-if="!$ctrl.user">
+            <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mt-8">
+                <h2 class="text-2xl font-bold text-center mb-6">Connexion</h2>
+                
+                <form ng-submit="$ctrl.login()">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Nom d'utilisateur</label>
+                        <input type="text" ng-model="$ctrl.loginData.username" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                               required>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-2">Mot de passe</label>
+                        <input type="password" ng-model="$ctrl.loginData.password" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                               required>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                        Se connecter
+                    </button>
+                </form>
+                
+                <p class="text-center mt-4 text-gray-600">
+                    Pas de compte? 
+                    <a href="#" ng-click="$ctrl.showRegister = true" class="text-blue-600 hover:underline">Créer un compte</a>
+                </p>
+            </div>
         </div>
 
-        <!-- Google Sign In -->
-        <div class="social-login">
-          <button id="btnGoogle" class="btn-social" title="Connexion Google">
-            <i class="fab fa-google"></i> Google
-          </button>
+        <!-- Composant d'inscription -->
+        <div id="registerView" class="fade-in" ng-if="!$ctrl.user && $ctrl.showRegister">
+            <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mt-8">
+                <h2 class="text-2xl font-bold text-center mb-6">Créer un compte</h2>
+                
+                <form ng-submit="$ctrl.register()">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Photo de profil</label>
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                                <img id="profilePreview" ng-src="{{$ctrl.profilePreview}}" 
+                                     class="w-full h-full object-cover" 
+                                     ng-if="$ctrl.profilePreview">
+                                <i class="fas fa-user text-gray-500 text-2xl" ng-if="!$ctrl.profilePreview"></i>
+                            </div>
+                            <input type="file" id="profilePhoto" accept="image/*" 
+                                   class="hidden" ng-change="$ctrl.handleProfilePhoto($event)">
+                            <button type="button" onclick="document.getElementById('profilePhoto').click()"
+                                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                                <i class="fas fa-upload mr-2"></i>Choisir
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Nom d'utilisateur</label>
+                        <input type="text" ng-model="$ctrl.registerData.username" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                               required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Mot de passe</label>
+                        <input type="password" ng-model="$ctrl.registerData.password" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                               required minlength="6">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-2">Type de stockage</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" ng-model="$ctrl.registerData.storageType" value="cloud" class="text-blue-600">
+                                <span class="text-gray-700">
+                                    <i class="fas fa-cloud mr-1"></i>Stockage Cloud
+                                </span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" ng-model="$ctrl.registerData.storageType" value="local" class="text-blue-600">
+                                <span class="text-gray-700">
+                                    <i class="fas fa-database mr-1"></i>Stockage Local (IndexDB)
+                                </span>
+                            </label>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Le stockage cloud sauvegarde vos fichiers sur nos serveurs sécurisés.
+                            Le stockage local conserve vos fichiers sur votre appareil.
+                        </p>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition font-semibold">
+                        Créer mon compte
+                    </button>
+                </form>
+                
+                <p class="text-center mt-4 text-gray-600">
+                    Déjà un compte? 
+                    <a href="#" ng-click="$ctrl.showRegister = false" class="text-blue-600 hover:underline">Se connecter</a>
+                </p>
+            </div>
         </div>
 
-        <div class="separator">
-          <span>ou</span>
+        <!-- Tableau de bord principal -->
+        <div id="dashboardView" class="fade-in" ng-if="$ctrl.user">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                            <img ng-src="{{$ctrl.user.profilePhoto}}" 
+                                 class="w-full h-full object-cover" 
+                                 ng-if="$ctrl.user.profilePhoto">
+                            <i class="fas fa-user text-blue-600" ng-if="!$ctrl.user.profilePhoto"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold">Bonjour, {{$ctrl.user.username}}!</h2>
+                            <p class="text-gray-600 text-sm">
+                                Stockage: {{$ctrl.user.storageType === 'cloud' ? 'Cloud' : 'Local'}}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button ng-click="$ctrl.showProfileSettings = true"
+                                class="bg-blue-100 text-blue-600 p-2 rounded-lg hover:bg-blue-200 transition">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button ng-click="$ctrl.logout()"
+                                class="bg-red-100 text-red-600 p-2 rounded-lg hover:bg-red-200 transition">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestion des fichiers -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold">Mes fichiers</h3>
+                    <input type="file" id="fileUpload" multiple 
+                           ng-change="$ctrl.handleFileUpload($event)" class="hidden"
+                           accept="image/*,video/*">
+                    <button onclick="document.getElementById('fileUpload').click()"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Ajouter des fichiers
+                    </button>
+                </div>
+                
+                <!-- Liste des fichiers -->
+                <div class="space-y-3">
+                    <div ng-repeat="file in $ctrl.userFiles" 
+                         class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas {{file.type === 'image' ? 'fa-image' : 'fa-video'}} text-blue-600"></i>
+                            <div>
+                                <p class="font-medium">{{file.name}}</p>
+                                <p class="text-sm text-gray-500">{{file.size}} MB</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button ng-click="$ctrl.downloadFile(file)"
+                                    class="text-green-600 hover:text-green-800 p-2">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button ng-click="$ctrl.deleteFile(file)"
+                                    class="text-red-600 hover:text-red-800 p-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div ng-if="$ctrl.userFiles.length === 0" class="text-center py-8 text-gray-500">
+                        <i class="fas fa-folder-open text-4xl mb-2"></i>
+                        <p>Aucun fichier pour le moment</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Email/Password Form -->
-        <form id="authForm">
-          <input type="text" id="username" placeholder="Nom d'utilisateur" />
-          <input type="email" id="email" placeholder="Email" required />
-          <input type="password" id="password" placeholder="Mot de passe (6+ caractères)" required />
-
-          <div class="storage-choice">
-            <p>☁️ Stockage Cloud:</p>
-            <button type="button" class="choice-btn" data-storage="cloud" id="btnCloudMode">
-              <i class="fas fa-cloud-upload-alt"></i> Cloud
-            </button>
-          </div>
-
-          <button type="submit" class="btn-primary" id="btnAuthSubmit">
-            <i class="fas fa-sign-in-alt"></i> Connexion / Inscription
-          </button>
-        </form>
-
-        <div class="loader" id="authLoader"></div>
-      </div>
+        <!-- Paramètres du profil -->
+        <div id="profileSettings" class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
+             ng-if="$ctrl.showProfileSettings">
+            <div class="bg-white rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+                <h3 class="text-xl font-bold mb-4">Paramètres du profil</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Changer la photo de profil</label>
+                        <input type="file" accept="image/*" ng-change="$ctrl.updateProfilePhoto($event)"
+                               class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Changer le type de stockage</label>
+                        <select ng-model="$ctrl.user.storageType" 
+                                class="w-full p-3 border border-gray-300 rounded-lg">
+                            <option value="cloud">Stockage Cloud</option>
+                            <option value="local">Stockage Local (IndexDB)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex space-x-3 pt-4">
+                        <button ng-click="$ctrl.showProfileSettings = false"
+                                class="flex-1 bg-gray-300 text-gray-700 p-3 rounded-lg hover:bg-gray-400 transition">
+                            Annuler
+                        </button>
+                        <button ng-click="$ctrl.saveProfileSettings()"
+                                class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">
+                            Sauvegarder
+                        </button>
+                        <button ng-click="$ctrl.deleteAccount()"
+                                class="flex-1 bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition">
+                            Supprimer le compte
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Main Header -->
-    <header>
-      <div class="header-left">
-        <img src="secretvault.png" alt="SecretVault" class="app-logo">
-        <h1>SecretVault</h1>
-      </div>
-      <div class="header-actions">
-        <img src="secretvault.png" alt="Profile" id="profilePicture" class="profile-picture">
-        <button id="btnLogout" class="btn-logout" style="display: none;">
-          <i class="fas fa-sign-out-alt"></i> Déconnexion
-        </button>
-      </div>
-    </header>
+    <!-- Import des scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js"></script>
+    <script src="app.js"></script>
+    <script src="firebase-auth.js"></script>
+    
+    <script>
+        // Initialisation du menu hamburger
+        document.getElementById('menuBtn').addEventListener('click', function() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('hidden');
+        });
 
-    <!-- Welcome Message -->
-    <h2 id="welcomeMessage" class="welcome-message"></h2>
-
-    <!-- Gallery Section -->
-    <section id="gallerySection" class="hidden">
-      <div class="storage-badge" id="storageBadge"></div>
-
-      <!-- Action Buttons -->
-      <div class="actions">
-        <label for="inputProfilePic" class="btn-action">
-          <i class="fas fa-image"></i> Photo Profil
-        </label>
-        <input type="file" id="inputProfilePic" accept="image/*" class="hidden" />
-
-        <button id="btnAddPhotos" class="btn-action">
-          <i class="fas fa-plus-circle"></i> Ajouter Photos
-        </button>
-
-        <button id="btnClearAll" class="btn-action">
-          <i class="fas fa-trash-alt"></i> Tout Supprimer
-        </button>
-      </div>
-
-      <input type="file" id="inputPhotos" accept="image/*" multiple class="hidden" />
-
-      <!-- Photo Counter -->
-      <div class="photo-counter" id="photoCounter"></div>
-
-      <!-- Gallery Grid -->
-      <div class="gallery" id="gallery"></div>
-
-      <!-- Empty Gallery Message -->
-      <p id="emptyGalleryMsg" class="empty-gallery-msg">
-        <i class="fas fa-inbox"></i> Votre galerie est vide. Ajoutez des photos !
-      </p>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-      <p>&copy; 2025 SecretVault - PWA Sécurisée</p>
-      <div class="footer-credits">
-        Développé par Badley | <a href="https://badley08.github.io/Karlito" target="_blank" rel="noopener noreferrer">Portfolio</a>
-      </div>
-    </footer>
-  </div>
-
-  <!-- Firebase SDK (via CDN) -->
-  <script type="module" src="app.js"></script>
+        // Masquer l'écran de chargement
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading').style.display = 'none';
+            }, 1500);
+        });
+    </script>
 </body>
 </html>
