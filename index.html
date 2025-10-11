@@ -1,1123 +1,124 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Galerie Photos Sécurisée</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-light: #6c5ce7;
-            --primary-dark: #a29bfe;
-            --secondary: #fd79a8;
-            --bg-light: #f7f7ff;
-            --text-light: #2d3436;
-            --card-light: #ffffff;
-            --shadow-light: rgba(149, 157, 165, 0.2);
-            --bg-dark: #1e272e;
-            --text-dark: #f5f6fa;
-            --card-dark: #2f3640;
-            --shadow-dark: rgba(0, 0, 0, 0.3);
-            --transition: all 0.3s ease;
-            --vault-blue: #2c3e50;
-            --vault-green: #27ae60;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-dark);
-            min-height: 100vh;
-            transition: var(--transition);
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Login overlay styling */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease;
-        }
-
-        .login-container {
-            background: rgba(30, 39, 46, 0.9);
-            border-radius: 20px;
-            padding: 40px;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .logo {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .logo i {
-            font-size: 36px;
-            color: var(--primary-dark);
-        }
-
-        .logo h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .form-group {
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: #a29bfe;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px 20px;
-            border-radius: 10px;
-            border: none;
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
-            transition: var(--transition);
-            border: 1px solid transparent;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary-dark);
-            background: rgba(162, 155, 254, 0.15);
-        }
-
-        .login-btn {
-            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
-            color: white;
-            padding: 14px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Poppins', sans-serif;
-            margin-top: 10px;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 15px rgba(162, 155, 254, 0.4);
-        }
-
-        .login-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(162, 155, 254, 0.6);
-        }
-
-        .login-error {
-            color: #ff6b6b;
-            margin-top: 20px;
-            font-size: 0.95rem;
-            height: 20px;
-        }
-
-        /* Main app styling - hidden by default */
-        .app-content {
-            display: none;
-        }
-
-        /* Header styling */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: var(--card-dark);
-            box-shadow: 0 4px 6px var(--shadow-dark);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            transition: var(--transition);
-        }
-
-        .welcome-message {
-            font-size: 1.1rem;
-            color: var(--primary-dark);
-            font-weight: 500;
-        }
-
-        .logo-app {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-app i {
-            font-size: 24px;
-            color: var(--primary-dark);
-        }
-
-        .logo-app h1 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Hamburger menu styling */
-        .menu-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary-dark);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 4px 8px rgba(162, 155, 254, 0.3);
-        }
-
-        .menu-btn span {
-            display: block;
-            width: 20px;
-            height: 2px;
-            background: white;
-            margin: 2px 0;
-            border-radius: 2px;
-            transition: var(--transition);
-        }
-
-        .menu-btn.active span:nth-child(1) {
-            transform: translateY(6px) rotate(45deg);
-        }
-
-        .menu-btn.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .menu-btn.active span:nth-child(3) {
-            transform: translateY(-6px) rotate(-45deg);
-        }
-
-        /* Sidebar styling */
-        .sidebar {
-            position: fixed;
-            top: 70px;
-            left: -300px;
-            width: 280px;
-            height: calc(100vh - 70px);
-            background: var(--card-dark);
-            box-shadow: 5px 0 15px var(--shadow-dark);
-            transition: var(--transition);
-            z-index: 99;
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            border-radius: 0 20px 20px 0;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            margin: 5px 0;
-            cursor: pointer;
-            transition: var(--transition);
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar-item:hover {
-            background: rgba(162, 155, 254, 0.1);
-            border-left: 4px solid var(--primary-dark);
-        }
-
-        .sidebar-item i {
-            width: 30px;
-            font-size: 20px;
-            color: var(--primary-dark);
-            transition: var(--transition);
-        }
-
-        .sidebar-item span {
-            font-weight: 500;
-            color: var(--text-dark);
-        }
-
-        /* Main content styling */
-        .container {
-            max-width: 530px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .intro {
-            text-align: center;
-            margin: 30px 0;
-            padding: 0 10px;
-        }
-
-        .intro h2 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .intro p {
-            color: var(--text-dark);
-            opacity: 0.8;
-            margin-bottom: 20px;
-        }
-
-        .upload-area {
-            background: var(--card-dark);
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 20px var(--shadow-dark);
-            border: 3px dashed var(--primary-dark);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-area:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px var(--shadow-dark);
-        }
-
-        .upload-area i {
-            font-size: 40px;
-            color: var(--primary-dark);
-            margin-bottom: 15px;
-        }
-
-        .upload-area h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-            color: var(--text-dark);
-        }
-
-        .upload-area p {
-            color: var(--text-dark);
-            opacity: 0.7;
-        }
-
-        .upload-btn {
-            display: inline-block;
-            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
-            color: white;
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            margin-top: 15px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(162, 155, 254, 0.4);
-            transition: var(--transition);
-            border: none;
-            font-size: 0.9rem;
-        }
-
-        .upload-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(162, 155, 254, 0.6);
-        }
-
-        #file-input {
-            display: none;
-        }
-
-        /* Gallery styling */
-        .gallery-section h2 {
-            text-align: center;
-            margin: 30px 0 20px;
-            font-size: 1.6rem;
-            position: relative;
-            display: inline-block;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--text-dark);
-        }
-
-        .gallery-section h2::after {
-            content: "";
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
-            border-radius: 2px;
-        }
-
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 12px;
-            margin-top: 30px;
-        }
-
-        .photo-card {
-            position: relative;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px var(--shadow-dark);
-            aspect-ratio: 1/1;
-            transition: var(--transition);
-            background: var(--card-dark);
-            cursor: pointer;
-        }
-
-        .photo-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px var(--shadow-dark);
-        }
-
-        .photo-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .empty-gallery {
-            text-align: center;
-            padding: 40px 20px;
-            grid-column: 1 / -1;
-        }
-
-        .empty-gallery i {
-            font-size: 50px;
-            color: var(--primary-dark);
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-gallery p {
-            font-size: 1rem;
-            opacity: 0.7;
-            color: var(--text-dark);
-        }
-
-        .delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255, 0, 0, 0.7);
-            color: white;
-            border: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: var(--transition);
-            z-index: 2;
-        }
-
-        .photo-card:hover .delete-btn {
-            opacity: 1;
-        }
-
-        /* Ko-fi button styling */
-        .kofi-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 90;
-        }
-
-        .kofi-btn {
-            display: flex;
-            align-items: center;
-            background: #29abe0;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-
-        .kofi-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            background: #238fbc;
-        }
-
-        .kofi-btn i {
-            margin-right: 8px;
-            font-size: 1rem;
-        }
-
-        /* Confirmation modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: var(--card-dark);
-            padding: 20px;
-            border-radius: 15px;
-            max-width: 90%;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-content h3 {
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            color: var(--text-dark);
-        }
-
-        .modal-content p {
-            color: var(--text-dark);
-            opacity: 0.8;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .modal-btn {
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-
-        .confirm-btn {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .cancel-btn {
-            background: var(--primary-dark);
-            color: white;
-        }
-
-        .modal-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Image preview modal */
-        .image-modal-content {
-            position: relative;
-            background: var(--card-dark);
-            border-radius: 15px;
-            max-width: 90%;
-            max-height: 80vh;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-        }
-
-        .image-modal-content img {
-            max-width: 100%;
-            max-height: 60vh;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .close-modal:hover {
-            color: var(--secondary);
-        }
-
-        .image-actions {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .download-btn {
-            background: var(--primary-dark);
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--card-dark);
-            color: var(--text-dark);
-            padding: 12px 25px;
-            border-radius: 50px;
-            box-shadow: 0 5px 15px var(--shadow-dark);
-            font-weight: 500;
-            z-index: 1001;
-            transition: transform 0.4s ease;
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-            max-width: 90%;
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast i {
-            margin-right: 8px;
-            font-size: 1rem;
-        }
-
-        .toast.success {
-            border-left: 4px solid #2ecc71;
-        }
-
-        .toast.error {
-            border-left: 4px solid #e74c3c;
-        }
-
-        /* Theme specific styles */
-        body.theme-blue {
-            --primary-dark: #3498db;
-            --secondary: #9b59b6;
-            --bg-dark: #2c3e50;
-            --card-dark: #34495e;
-        }
-
-        body.theme-green {
-            --primary-dark: #2ecc71;
-            --secondary: #f1c40f;
-            --bg-dark: #16a085;
-            --card-dark: #27ae60;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 400px) {
-            .gallery {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .upload-area {
-                padding: 15px;
-            }
-            
-            .upload-btn {
-                padding: 8px 15px;
-                font-size: 0.8rem;
-            }
-            
-            .kofi-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .login-container {
-                padding: 25px;
-            }
-            
-            .form-group input {
-                padding: 12px 15px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0066ff">
+  <meta name="description" content="SecretVault : Stockez vos photos en toute sécurité, localement ou dans le cloud, avec une expérience ultra-rapide et privée.">
+  <meta name="keywords" content="SecretVault, PWA, photos, galerie, cloud, stockage local, sécurisé, firebase, confidentialité">
+  <meta name="author" content="SecretVault Team">
+  <meta property="og:title" content="SecretVault – Galerie sécurisée">
+  <meta property="og:description" content="Stockez vos photos en toute sécurité, localement ou dans le cloud.">
+  
+  <title>SecretVault – Galerie sécurisée</title>
+  
+  <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066ff' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>S</text></svg>">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  
+  <script src="https://kit.fontawesome.com/a2e0b4f3d4.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <!-- Login overlay -->
-    <div class="login-overlay" id="login-overlay">
-        <div class="login-container">
-            <div class="logo">
-                <i class="fas fa-lock"></i>
-                <h1>Galerie Sécurisée</h1>
-            </div>
-            <form class="login-form" id="login-form">
-                <div class="form-group">
-                    <label for="username"><i class="fas fa-user"></i> Nom d'utilisateur</label>
-                    <input type="text" id="username" name="username" placeholder="Entrez votre nom d'utilisateur" required>
-                </div>
-                <div class="form-group">
-                    <label for="password"><i class="fas fa-key"></i> Mot de passe</label>
-                    <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
-                </div>
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Se connecter
-                </button>
-                <div id="login-error" class="login-error"></div>
-            </form>
+
+  <div class="container">
+
+    <nav class="hamburger-menu">
+      <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+      <div class="menu-links" id="menuLinks">
+        <a href="https://badley08.github.io/Karlito" target="_blank" rel="noopener noreferrer">
+          <i class="fas fa-briefcase"></i> Mon Portfolio
+        </a>
+        <a href="https://ko-fi.com/karlito08" target="_blank" rel="noopener noreferrer">
+          <i class="fas fa-heart"></i> Me soutenir sur Ko-fi
+        </a>
+      </div>
+    </nav>
+    
+    <div class="modal" id="authModal">
+      <div class="modal-content">
+        <h2><i class="fas fa-lock"></i> SecretVault</h2>
+        
+        <div class="storage-choice-prompt">
+            <p>💨 Accès rapide:</p>
+            <button type="button" class="choice-btn selected" data-storage="local" id="btnLocalMode">
+              <i class="fas fa-mobile-alt"></i> Mode Local
+            </button>
         </div>
+        <p>── ou ──</p>
+
+        <div class="social-login">
+          <button id="btnGoogle" class="btn-social" title="Google"><i class="fab fa-google"></i></button>
+        </div>
+
+        <p>── ou utiliser les identifiants ──</p>
+
+        <form id="authForm">
+          <input type="text" id="username" placeholder="Nom d'utilisateur (pour le Cloud)" />
+          <input type="email" id="email" placeholder="Email (pour le Cloud)" required />
+          <input type="password" id="password" placeholder="Mot de passe" required />
+
+          <div class="storage-choice">
+            <p>☁️ Stockage Cloud:</p>
+            <button type="button" class="choice-btn" data-storage="cloud" id="btnCloudMode">
+              <i class="fas fa-cloud-upload-alt"></i> Cloud (sauvegarde)
+            </button>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btnAuthSubmit">
+            <i class="fas fa-sign-in-alt"></i> Connexion / Inscription
+          </button>
+        </form>
+
+        <div class="loader" id="authLoader"></div>
+      </div>
     </div>
+    
+    <header>
+      <div class="app-logo"><i class="fas fa-vault"></i> SecretVault</div>
+      <div class="header-actions">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%230066ff'/%3E%3Ctext x='50' y='55' font-size='60' font-weight='bold' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E" alt="Photo de profil" id="profilePicture" class="profile-picture">
+          <button id="btnLogout" class="btn-logout" style="display: none;">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+          </button>
+      </div>
+    </header>
 
-    <!-- Main app content (hidden until login) -->
-    <div class="app-content" id="app-content">
-        <!-- Header with hamburger menu -->
-        <header>
-            <div class="logo-app">
-                <i class="fas fa-camera-retro"></i>
-                <h1>Ma Galerie</h1>
-            </div>
-            <div class="welcome-message" id="welcome-message"></div>
-            <div class="menu-btn">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </header>
+    <h2 id="welcomeMessage" class="welcome-message"></h2>
 
-        <!-- Sidebar menu -->
-        <div class="sidebar">
-            <div class="sidebar-item" id="theme-toggle">
-                <i class="fas fa-palette"></i>
-                <span>Changer de thème</span>
-            </div>
-            <div class="sidebar-item" id="clear-all">
-                <i class="fas fa-trash-alt"></i>
-                <span>Tout Supprimer</span>
-            </div>
-            <div class="sidebar-item" id="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </div>
-        </div>
+    <section id="gallerySection" class="hidden">
+      <div class="storage-badge" id="storageBadge"></div>
+      
+      <div class="actions">
+        <label for="inputProfilePic" class="btn-action">
+          <i class="fas fa-image"></i> Photo Profil
+        </label>
+        <input type="file" id="inputProfilePic" accept="image/*" class="hidden" />
+        
+        <button id="btnAddPhotos" class="btn-action">
+          <i class="fas fa-plus-circle"></i> Ajouter photos
+        </button>
+        <button id="btnClearAll" class="btn-action">
+          <i class="fas fa-trash-alt"></i> Tout supprimer
+        </button>
+      </div>
+      <input type="file" id="inputPhotos" accept="image/*" multiple class="hidden" />
 
-        <!-- Main content -->
-        <div class="container">
-            <div class="intro">
-                <h2>Stockez vos photos en toute sécurité</h2>
-                <p>Ajoutez vos photos et elles seront sauvegardées localement sur votre appareil.</p>
-            </div>
+      <div class="photo-counter" id="photoCounter"></div>
+      <div class="gallery" id="gallery"></div>
+      <p id="emptyGalleryMsg" class="empty-gallery-msg">
+        <i class="fas fa-inbox"></i> Votre galerie est vide. Ajoutez des photos !
+      </p>
+    </section>
 
-            <div class="upload-area">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <h3>Ajouter des photos</h3>
-                <p>Sélectionnez une ou plusieurs images (JPG, PNG)</p>
-                <button class="upload-btn" id="upload-trigger">
-                    <i class="fas fa-plus"></i> Choisir des photos
-                </button>
-                <input type="file" id="file-input" accept="image/*" multiple>
-            </div>
+    <footer>
+      <p>&copy; 2025 SecretVault - PWA Sécurisée</p>
+      <div class="footer-credits">
+        Développé par Badley | <a href="https://badley08.github.io/Karlito" target="_blank" rel="noopener noreferrer" style="color: #0066ff; text-decoration: none;">Portfolio</a>
+      </div>
+    </footer>
 
-            <div class="gallery-section">
-                <h2>Votre Collection</h2>
-                <div class="gallery" id="gallery">
-                    <!-- Photos will be added here dynamically -->
-                </div>
-            </div>
-        </div>
+  </div>
 
-        <!-- Ko-fi button -->
-        <div class="kofi-container">
-            <a href="https://ko-fi.com/karlito08" target="_blank" class="kofi-btn">
-                <i class="fas fa-coffee"></i> Supportez-moi
-            </a>
-        </div>
-
-        <!-- Confirmation modal -->
-        <div class="modal" id="confirmation-modal">
-            <div class="modal-content">
-                <h3>Confirmer la suppression</h3>
-                <p>Êtes-vous sûr de vouloir supprimer toutes vos photos ? Cette action est irréversible.</p>
-                <div class="modal-buttons">
-                    <button class="modal-btn confirm-btn" id="confirm-delete">Supprimer</button>
-                    <button class="modal-btn cancel-btn" id="cancel-delete">Annuler</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Image preview modal -->
-        <div class="modal" id="image-modal">
-            <div class="image-modal-content">
-                <span class="close-modal">&times;</span>
-                <img id="modal-image" src="" alt="Preview">
-                <div class="image-actions">
-                    <button class="modal-btn download-btn" id="download-image">
-                        <i class="fas fa-download"></i> Télécharger
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Toast notification -->
-        <div class="toast" id="toast"></div>
-    </div>
-
-    <script>
-        // Simulated user database
-        const users = [
-            { username: "Johnson", password: "123456" },
-            { username: "Karlito", password: "karlbrad22" },
-            { username: "Uknown", password:  "uknown123" },
-            { username: "Admin", password: "admin123" }
-        ];
-
-        // DOM Elements
-        const loginOverlay = document.getElementById('login-overlay');
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
-        const appContent = document.getElementById('app-content');
-        const welcomeMessage = document.getElementById('welcome-message');
-        const menuBtn = document.querySelector('.menu-btn');
-        const sidebar = document.querySelector('.sidebar');
-        const themeToggle = document.getElementById('theme-toggle');
-        const clearAllBtn = document.getElementById('clear-all');
-        const uploadTrigger = document.getElementById('upload-trigger');
-        const fileInput = document.getElementById('file-input');
-        const gallery = document.getElementById('gallery');
-        const confirmationModal = document.getElementById('confirmation-modal');
-        const confirmDeleteBtn = document.getElementById('confirm-delete');
-        const cancelDeleteBtn = document.getElementById('cancel-delete');
-        const toast = document.getElementById('toast');
-        const imageModal = document.getElementById('image-modal');
-        const modalImage = document.getElementById('modal-image');
-        const closeModal = document.querySelector('.close-modal');
-        const downloadBtn = document.getElementById('download-image');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        // State variables
-        let photos = JSON.parse(localStorage.getItem('photos')) || [];
-        let currentUser = localStorage.getItem('currentUser');
-        let currentTheme = localStorage.getItem('theme') || 'dark';
-        let currentPhoto = null;
-
-        // Apply saved theme
-        document.body.classList.add(`theme-${currentTheme}`);
-
-        // Check if user is already logged in
-        if (currentUser) {
-            showApp();
-        }
-
-        // Login form submission
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            // Check credentials
-            const user = users.find(u => u.username === username && u.password === password);
-            
-            if (user) {
-                // Successful login
-                currentUser = username;
-                localStorage.setItem('currentUser', username);
-                showApp();
-                showToast(`Bienvenue ${username} !`, 'success');
-            } else {
-                // Failed login
-                loginError.textContent = 'Vous n\'etes pas autorisé à accéder à cette galerie';
-                showToast('Vous n\'etes pas autorisé à accéder à cette galerie', 'error');
-            }
-        });
-
-        // Show the main app
-        function showApp() {
-            loginOverlay.style.opacity = '0';
-            setTimeout(() => {
-                loginOverlay.style.display = 'none';
-                appContent.style.display = 'block';
-                welcomeMessage.textContent = `Bienvenue, ${currentUser} !`;
-                initApp();
-            }, 500);
-        }
-
-        // Initialize the app
-        function initApp() {
-            // Render gallery
-            renderGallery();
-            
-            // Set up event listeners
-            setupEventListeners();
-        }
-
-        // Set up all event listeners
-        function setupEventListeners() {
-            // Hamburger menu toggle
-            menuBtn.addEventListener('click', () => {
-                menuBtn.classList.toggle('active');
-                sidebar.classList.toggle('active');
-            });
-            
-            // Theme toggle
-            themeToggle.addEventListener('click', toggleTheme);
-            
-            // Clear all photos
-            clearAllBtn.addEventListener('click', () => {
-                confirmationModal.style.display = 'flex';
-            });
-            
-            // Modal buttons
-            confirmDeleteBtn.addEventListener('click', clearAllPhotos);
-            cancelDeleteBtn.addEventListener('click', () => {
-                confirmationModal.style.display = 'none';
-            });
-            
-            // File upload
-            uploadTrigger.addEventListener('click', () => {
-                fileInput.click();
-            });
-            
-            fileInput.addEventListener('change', handleFileUpload);
-            
-            // Close modal when clicking outside
-            window.addEventListener('click', (e) => {
-                if (e.target === confirmationModal) {
-                    confirmationModal.style.display = 'none';
-                }
-                if (e.target === imageModal) {
-                    imageModal.style.display = 'none';
-                }
-            });
-            
-            // Close image modal with button
-            closeModal.addEventListener('click', () => {
-                imageModal.style.display = 'none';
-            });
-            
-            // Logout button
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', logout);
-            }
-        }
-
-        // Toggle between themes
-        function toggleTheme() {
-            const themes = ['dark', 'blue', 'green'];
-            const currentIndex = themes.indexOf(currentTheme);
-            const nextIndex = (currentIndex + 1) % themes.length;
-            currentTheme = themes[nextIndex];
-            
-            // Remove all theme classes
-            document.body.classList.remove('theme-dark', 'theme-blue', 'theme-green');
-            // Add current theme class
-            document.body.classList.add(`theme-${currentTheme}`);
-            
-            localStorage.setItem('theme', currentTheme);
-            
-            showToast(`Thème ${currentTheme} activé`, 'success');
-        }
-
-        // Handle file upload
-        function handleFileUpload(e) {
-            const files = e.target.files;
-            if (files.length === 0) return;
-            
-            let newPhotosCount = 0;
-            
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                
-            // Check if file is an image
-            if (!file.type.match('image.*')) {
-                showToast('Seules les images sont autorisées', 'error');
-                continue;
-            }
-            
-            // Check file size (max 10MB)
-if (file.size > 10 * 1024 * 1024) {
-    showToast(`L'image ${file.name} dépasse 10MB`, 'error');
-    continue;
-}
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const photoData = {
-                        id: Date.now() + i,
-                        dataUrl: e.target.result,
-                        name: file.name,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    photos.push(photoData);
-                    localStorage.setItem('photos', JSON.stringify(photos));
-                    renderGallery();
-                    newPhotosCount++;
-                    
-                    if (i === files.length - 1) {
-                        showToast(`${newPhotosCount} photo(s) ajoutée(s)`, 'success');
-                    }
-                };
-                
-                reader.readAsDataURL(file);
-            }
-            
-            // Reset file input
-            fileInput.value = '';
-        }
-
-        // Render gallery with photos
-        function renderGallery() {
-            if (photos.length === 0) {
-                gallery.innerHTML = `
-                    <div class="empty-gallery">
-                        <i class="fas fa-images"></i>
-                        <p>Aucune photo dans votre collection</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            gallery.innerHTML = '';
-            
-            photos.forEach(photo => {
-                const photoCard = document.createElement('div');
-                photoCard.className = 'photo-card';
-                photoCard.innerHTML = `
-                    <img src="${photo.dataUrl}" alt="Photo" data-id="${photo.id}">
-                    <button class="delete-btn" data-id="${photo.id}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
-                gallery.appendChild(photoCard);
-                
-                // Add click event to show image in modal
-                const img = photoCard.querySelector('img');
-                img.addEventListener('click', () => showImageModal(photo));
-                
-                // Add delete event listener
-                const deleteBtn = photoCard.querySelector('.delete-btn');
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deletePhoto(photo.id);
-                });
-            });
-        }
-
-        // Show image in modal
-        function showImageModal(photo) {
-            modalImage.src = photo.dataUrl;
-            modalImage.alt = photo.name;
-            currentPhoto = photo;
-            
-            imageModal.style.display = 'flex';
-        }
-
-        // Download image
-        function downloadImage() {
-            if (!currentPhoto) return;
-            
-            const link = document.createElement('a');
-            link.href = currentPhoto.dataUrl;
-            link.download = currentPhoto.name || `photo-${currentPhoto.id}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('Téléchargement commencé', 'success');
-        }
-
-        // Delete a single photo
-        function deletePhoto(id) {
-            photos = photos.filter(photo => photo.id !== id);
-            localStorage.setItem('photos', JSON.stringify(photos));
-            renderGallery();
-            showToast('Photo supprimée', 'success');
-        }
-
-        // Clear all photos
-        function clearAllPhotos() {
-            photos = [];
-            localStorage.removeItem('photos');
-            renderGallery();
-            confirmationModal.style.display = 'none';
-            showToast('Toutes les photos ont été supprimées', 'success');
-        }
-
-        // Show toast notification
-        function showToast(message, type) {
-            toast.textContent = message;
-            toast.className = `toast ${type}`;
-            
-            if (type === 'success') {
-                toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-            } else {
-                toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-            }
-            
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // Logout function
-        function logout() {
-            localStorage.removeItem('currentUser');
-            window.location.reload();
-        }
-
-        // Setup download button
-        downloadBtn.addEventListener('click', downloadImage);
-    </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
