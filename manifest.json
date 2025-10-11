@@ -8,12 +8,15 @@
   "orientation": "portrait-primary",
   "background_color": "#0a0e27",
   "theme_color": "#0066ff",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["photography", "productivity"],
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066ff' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>S</text></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%230066ff' width='512' height='512'/><text x='50%' y='50%' font-size='320' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>S</text></svg>",
@@ -22,13 +25,20 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["photography", "productivity"],
   "screenshots": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%230a0e27' width='540' height='720'/><text x='270' y='360' font-size='80' font-weight='bold' fill='%230066ff' text-anchor='middle' dy='.3em'>SecretVault</text></svg>",
       "sizes": "540x720",
       "type": "image/svg+xml",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "Interface principale SecretVault"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'><rect fill='%230a0e27' width='1280' height='720'/><text x='640' y='360' font-size='100' font-weight='bold' fill='%230066ff' text-anchor='middle' dy='.3em'>SecretVault</text></svg>",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Vue bureau SecretVault"
     }
   ],
   "shortcuts": [
@@ -36,7 +46,7 @@
       "name": "Ajouter une photo",
       "short_name": "Ajouter",
       "description": "Ajouter une nouvelle photo à votre galerie",
-      "url": "/?action=add",
+      "url": "./?action=add",
       "icons": [
         {
           "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%230066ff' width='96' height='96'/><text x='48' y='50' font-size='60' fill='white' text-anchor='middle' dy='.3em'>+</text></svg>",
@@ -44,10 +54,25 @@
           "type": "image/svg+xml"
         }
       ]
+    },
+    {
+      "name": "Ma Galerie",
+      "short_name": "Galerie",
+      "description": "Accéder à toutes mes photos",
+      "url": "./?view=gallery",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%230066ff' width='96' height='96'/><text x='48' y='50' font-size='60' fill='white' text-anchor='middle' dy='.3em'>📷</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ],
+  "related_applications": [],
+  "prefer_related_applications": false,
   "share_target": {
-    "action": "/share",
+    "action": "./share",
     "method": "POST",
     "enctype": "multipart/form-data",
     "params": {
@@ -58,5 +83,8 @@
         }
       ]
     }
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
   }
 }
