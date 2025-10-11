@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" ng-app="secretVaultApp">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SecretVault - Stockez vos fichiers en toute sécurité">
+    <meta name="description" content="SecretVault - Stockez vos fichiers en toute sécurité avec un design élégant">
     <meta name="author" content="Karlito">
     <meta name="email" content="karlluberisse1308@gmail.com">
-    <meta name="theme-color" content="#1976d2">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="keywords" content="secretvault, stockage, photos, vidéos, sécurisé, cloud, local">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -17,293 +18,558 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <title>SecretVault - Stockage Sécurisé</title>
-    
-    <style>
-        .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    <title>SecretVault - Stockage Sécurisé Élégant</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <!-- Navigation avec menu hamburger -->
-    <nav class="bg-blue-600 text-white p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <img src="secretvault.png" alt="SecretVault Logo" class="h-8 w-8" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMTk3NmQyIi8+CjxwYXRoIGQ9Ik0xNiA4QzE0LjUgOCAxMy41IDkgMTMuNSAxMC41QzEzLjUgMTIgMTQuNSAxMyAxNiAxM0MxNy41IDEzIDE4LjUgMTIgMTguNSAxMC41QzE4LjUgOSAxNy41IDggMTYgOFpNMTYgMTVDMTQgMTUgMTIuNSAxNi41IDEyLjUgMTguNUwxMi41IDI0QzEyLjUgMjQuNSAxMi41IDI1IDEzIDI1SDE5QzE5LjUgMjUgMTkuNSAyNC41IDE5LjUgMjRMMTkuNSAxOC41QzE5LjUgMTYuNSAxOCAxNSAxNiAxNVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo='">
-                <h1 class="text-xl font-bold">SecretVault</h1>
+<body class="bg-slate-900 text-slate-100 min-h-screen" ng-controller="MainController as $ctrl">
+    <!-- Navigation -->
+    <nav class="bg-slate-800/80 backdrop-blur-lg border-b border-slate-700 sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="secretvault.png" alt="SecretVault" class="h-8 w-8 rounded-lg" 
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzYzNjZmMSIvPgo8cGF0aCBkPSJNMTYgOEMxNCA4IDEzIDkgMTMgMTEuNUMxMyAxNCAxNCAxNSAxNiAxNUMxOCAxNSAxOSAxNCAxOSAxMS41QzE5IDkgMTggOCAxNiA4Wk0xNiAxN0MxNCAxNyAxMi41IDE4LjUgMTIuNSAyMC41TDEyLjUgMjZDMTIuNSAyNi41IDEzIDI3IDEzLjUgMjdIMTguNUMyMCAyNyAyMC41IDI2LjUgMjAuNSAyNkwyMC41IDIwLjVDMjAuNSAxOC41IDE5IDE3IDE2IDE3WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+'">
+                <h1 class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+                    SecretVault
+                </h1>
             </div>
             
             <!-- Menu Hamburger -->
             <div class="relative">
-                <button id="menuBtn" class="p-2 rounded-lg hover:bg-blue-700 transition">
-                    <i class="fas fa-bars text-xl"></i>
+                <button id="menuBtn" class="p-2 rounded-xl hover:bg-slate-700/50 transition-all duration-300 group">
+                    <i class="fas fa-bars text-slate-300 group-hover:text-white text-lg"></i>
                 </button>
                 
-                <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                    <a href="https://badley08.github.io/Karlito" target="_blank" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">
-                        <i class="fas fa-user mr-2"></i>Mon Portfolio
+                <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-2xl border border-slate-700 py-3 z-50">
+                    <a href="https://badley08.github.io/Karlito" target="_blank" 
+                       class="flex items-center px-4 py-3 text-slate-200 hover:bg-slate-700/50 transition-all group">
+                        <i class="fas fa-user-circle mr-3 text-purple-400 group-hover:text-purple-300"></i>
+                        <span>Mon Portfolio</span>
                     </a>
-                    <a href="https://ko-fi.com/karlito08" target="_blank" class="block px-4 py-2 text-gray-800 hover:bg-blue-100">
-                        <i class="fas fa-heart mr-2"></i>Me soutenir
+                    <a href="https://ko-fi.com/karlito08" target="_blank" 
+                       class="flex items-center px-4 py-3 text-slate-200 hover:bg-slate-700/50 transition-all group">
+                        <i class="fas fa-heart mr-3 text-pink-400 group-hover:text-pink-300"></i>
+                        <span>Me soutenir sur Ko-fi</span>
                     </a>
+                    <div class="border-t border-slate-700 mt-2 pt-2">
+                        <a href="#" class="flex items-center px-4 py-2 text-slate-400 hover:text-slate-200 text-sm">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            À propos de SecretVault
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Application Angular -->
-    <div ng-app="secretVaultApp" ng-controller="MainController as $ctrl" class="container mx-auto p-4">
-        
-        <!-- Écran de chargement -->
-        <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
-            <div class="loading-spinner"></div>
-            <p class="text-gray-600 mt-4">Chargement de SecretVault...</p>
+    <!-- Écran de chargement -->
+    <div id="loading" class="fixed inset-0 bg-slate-900 z-50 flex flex-col justify-center items-center">
+        <div class="loader-spinner">
+            <div class="spinner-circle"></div>
         </div>
+        <p class="text-slate-400 mt-6 text-lg">Chargement de SecretVault...</p>
+        <div class="mt-4 flex space-x-2">
+            <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+            <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+        </div>
+    </div>
 
-        <!-- Composant de connexion -->
-        <div id="loginView" class="fade-in" ng-if="!$ctrl.user">
-            <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mt-8">
-                <h2 class="text-2xl font-bold text-center mb-6">Connexion</h2>
-                
-                <form ng-submit="$ctrl.login()">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Nom d'utilisateur</label>
-                        <input type="text" ng-model="$ctrl.loginData.username" 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                               required>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <label class="block text-gray-700 mb-2">Mot de passe</label>
-                        <input type="password" ng-model="$ctrl.loginData.password" 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                               required>
-                    </div>
-                    
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition font-semibold">
-                        Se connecter
-                    </button>
-                </form>
-                
-                <p class="text-center mt-4 text-gray-600">
-                    Pas de compte? 
-                    <a href="#" ng-click="$ctrl.showRegister = true" class="text-blue-600 hover:underline">Créer un compte</a>
-                </p>
+    <!-- Vue Authentification -->
+    <div id="authView" ng-if="!$ctrl.user" class="min-h-screen flex items-center justify-center px-4 py-8">
+        <div class="w-full max-w-md">
+            <!-- Logo Principal -->
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                    <i class="fas fa-lock text-white text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent mb-2">
+                    SecretVault
+                </h2>
+                <p class="text-slate-400">Stockage sécurisé et élégant</p>
             </div>
-        </div>
 
-        <!-- Composant d'inscription -->
-        <div id="registerView" class="fade-in" ng-if="!$ctrl.user && $ctrl.showRegister">
-            <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mt-8">
-                <h2 class="text-2xl font-bold text-center mb-6">Créer un compte</h2>
-                
-                <form ng-submit="$ctrl.register()">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Photo de profil</label>
-                        <div class="flex items-center space-x-4">
-                            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
-                                <img id="profilePreview" ng-src="{{$ctrl.profilePreview}}" 
-                                     class="w-full h-full object-cover" 
-                                     ng-if="$ctrl.profilePreview">
-                                <i class="fas fa-user text-gray-500 text-2xl" ng-if="!$ctrl.profilePreview"></i>
+            <!-- Formulaire de Connexion -->
+            <div id="loginForm" class="auth-form fade-in-up">
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700/50 shadow-2xl">
+                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Connexion</h3>
+                    
+                    <form ng-submit="$ctrl.login()">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-slate-300 text-sm font-medium mb-2">Nom d'utilisateur</label>
+                                <input type="text" ng-model="$ctrl.loginData.username" 
+                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
+                                       placeholder="Votre nom d'utilisateur" required>
                             </div>
-                            <input type="file" id="profilePhoto" accept="image/*" 
-                                   class="hidden" ng-change="$ctrl.handleProfilePhoto($event)">
-                            <button type="button" onclick="document.getElementById('profilePhoto').click()"
-                                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
-                                <i class="fas fa-upload mr-2"></i>Choisir
-                            </button>
+                            
+                            <div>
+                                <label class="block text-slate-300 text-sm font-medium mb-2">Mot de passe</label>
+                                <input type="password" ng-model="$ctrl.loginData.password" 
+                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
+                                       placeholder="Votre mot de passe" required>
+                            </div>
                         </div>
-                    </div>
+                        
+                        <button type="submit" class="w-full mt-6 bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all transform hover:-translate-y-0.5">
+                            Se connecter
+                        </button>
+                    </form>
                     
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Nom d'utilisateur</label>
-                        <input type="text" ng-model="$ctrl.registerData.username" 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                               required>
-                    </div>
+                    <p class="text-center mt-6 text-slate-400">
+                        Pas de compte? 
+                        <a href="#" ng-click="$ctrl.showRegister = true" class="text-indigo-400 hover:text-indigo-300 font-medium transition">Créer un compte</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Formulaire d'Inscription -->
+            <div id="registerForm" ng-if="$ctrl.showRegister" class="auth-form fade-in-up">
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700/50 shadow-2xl">
+                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Créer un compte</h3>
                     
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Mot de passe</label>
-                        <input type="password" ng-model="$ctrl.registerData.password" 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                               required minlength="6">
-                    </div>
-                    
-                    <div class="mb-6">
-                        <label class="block text-gray-700 mb-2">Type de stockage</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" ng-model="$ctrl.registerData.storageType" value="cloud" class="text-blue-600">
-                                <span class="text-gray-700">
-                                    <i class="fas fa-cloud mr-1"></i>Stockage Cloud
-                                </span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" ng-model="$ctrl.registerData.storageType" value="local" class="text-blue-600">
-                                <span class="text-gray-700">
-                                    <i class="fas fa-database mr-1"></i>Stockage Local (IndexDB)
-                                </span>
-                            </label>
+                    <form ng-submit="$ctrl.register()">
+                        <div class="space-y-4">
+                            <!-- Photo de profil -->
+                            <div>
+                                <label class="block text-slate-300 text-sm font-medium mb-3">Photo de profil</label>
+                                <div class="flex items-center space-x-4">
+                                    <div class="relative">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center overflow-hidden shadow-lg">
+                                            <img id="profilePreview" ng-src="{{$ctrl.profilePreview}}" 
+                                                 class="w-full h-full object-cover" 
+                                                 ng-if="$ctrl.profilePreview">
+                                            <i class="fas fa-user text-white text-xl" ng-if="!$ctrl.profilePreview"></i>
+                                        </div>
+                                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-camera text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="profilePhoto" accept="image/*" 
+                                           class="hidden" ng-change="$ctrl.handleProfilePhoto($event)">
+                                    <button type="button" onclick="document.getElementById('profilePhoto').click()"
+                                            class="flex-1 bg-slate-700/50 text-slate-300 px-4 py-3 rounded-xl border border-slate-600 hover:bg-slate-700 hover:text-white transition flex items-center justify-center space-x-2">
+                                        <i class="fas fa-upload"></i>
+                                        <span>Choisir une photo</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Nom d'utilisateur -->
+                            <div>
+                                <label class="block text-slate-300 text-sm font-medium mb-2">Nom d'utilisateur</label>
+                                <input type="text" ng-model="$ctrl.registerData.username" 
+                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
+                                       placeholder="Choisissez un nom d'utilisateur" required>
+                            </div>
+                            
+                            <!-- Mot de passe -->
+                            <div>
+                                <label class="block text-slate-300 text-sm font-medium mb-2">Mot de passe</label>
+                                <input type="password" ng-model="$ctrl.registerData.password" 
+                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
+                                       placeholder="Créez un mot de passe sécurisé" required minlength="6">
+                            </div>
+                            
+                            <!-- Sélection du stockage -->
+                            <div class="pt-2">
+                                <label class="block text-slate-300 text-sm font-medium mb-3">Type de stockage préféré</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="storage-option" 
+                                         ng-class="{'storage-selected': $ctrl.registerData.storageType === 'cloud'}"
+                                         ng-click="$ctrl.registerData.storageType = 'cloud'">
+                                        <div class="storage-icon">
+                                            <i class="fas fa-cloud"></i>
+                                        </div>
+                                        <div class="storage-info">
+                                            <div class="storage-title">Cloud</div>
+                                            <div class="storage-desc">Sécurisé</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="storage-option"
+                                         ng-class="{'storage-selected': $ctrl.registerData.storageType === 'local'}"
+                                         ng-click="$ctrl.registerData.storageType = 'local'">
+                                        <div class="storage-icon">
+                                            <i class="fas fa-database"></i>
+                                        </div>
+                                        <div class="storage-info">
+                                            <div class="storage-title">Local</div>
+                                            <div class="storage-desc">Rapide</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-3 text-center">
+                                    Vous pourrez changer cette préférence à tout moment
+                                </p>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-500 mt-2">
-                            Le stockage cloud sauvegarde vos fichiers sur nos serveurs sécurisés.
-                            Le stockage local conserve vos fichiers sur votre appareil.
-                        </p>
-                    </div>
+                        
+                        <button type="submit" class="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all transform hover:-translate-y-0.5">
+                            Créer mon compte
+                        </button>
+                    </form>
                     
-                    <button type="submit" 
-                            class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition font-semibold">
-                        Créer mon compte
-                    </button>
-                </form>
-                
-                <p class="text-center mt-4 text-gray-600">
-                    Déjà un compte? 
-                    <a href="#" ng-click="$ctrl.showRegister = false" class="text-blue-600 hover:underline">Se connecter</a>
-                </p>
+                    <p class="text-center mt-6 text-slate-400">
+                        Déjà un compte? 
+                        <a href="#" ng-click="$ctrl.showRegister = false" class="text-indigo-400 hover:text-indigo-300 font-medium transition">Se connecter</a>
+                    </p>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Tableau de bord principal -->
-        <div id="dashboardView" class="fade-in" ng-if="$ctrl.user">
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <!-- Tableau de Bord Principal -->
+    <div id="dashboardView" ng-if="$ctrl.user" class="min-h-screen pb-8">
+        <div class="container mx-auto px-4 py-6">
+            <!-- En-tête du tableau de bord -->
+            <div class="bg-slate-800/30 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-slate-700/30 shadow-lg">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
-                            <img ng-src="{{$ctrl.user.profilePhoto}}" 
-                                 class="w-full h-full object-cover" 
-                                 ng-if="$ctrl.user.profilePhoto">
-                            <i class="fas fa-user text-blue-600" ng-if="!$ctrl.user.profilePhoto"></i>
+                        <div class="relative">
+                            <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center overflow-hidden shadow-lg">
+                                <img ng-src="{{$ctrl.user.profilePhoto}}" 
+                                     class="w-full h-full object-cover" 
+                                     ng-if="$ctrl.user.profilePhoto">
+                                <i class="fas fa-user text-white text-xl" ng-if="!$ctrl.user.profilePhoto"></i>
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-slate-800"></div>
                         </div>
                         <div>
-                            <h2 class="text-xl font-semibold">Bonjour, {{$ctrl.user.username}}!</h2>
-                            <p class="text-gray-600 text-sm">
-                                Stockage: {{$ctrl.user.storageType === 'cloud' ? 'Cloud' : 'Local'}}
-                            </p>
+                            <h2 class="text-xl font-bold text-white">Bonjour, {{$ctrl.user.username}}! 👋</h2>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <span class="storage-badge" ng-class="$ctrl.user.storageType === 'cloud' ? 'cloud' : 'local'">
+                                    <i class="fas {{$ctrl.user.storageType === 'cloud' ? 'fa-cloud' : 'fa-database'}} mr-1"></i>
+                                    {{$ctrl.user.storageType === 'cloud' ? 'Stockage Cloud' : 'Stockage Local'}}
+                                </span>
+                                <span class="text-slate-400 text-sm">
+                                    • {{$ctrl.userFiles.length}} fichier(s)
+                                </span>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="flex space-x-2">
+                    <div class="flex items-center space-x-2">
+                        <!-- Bouton Paramètres -->
                         <button ng-click="$ctrl.showProfileSettings = true"
-                                class="bg-blue-100 text-blue-600 p-2 rounded-lg hover:bg-blue-200 transition">
-                            <i class="fas fa-cog"></i>
+                                class="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white transition-all group">
+                            <i class="fas fa-cog group-hover:rotate-90 transition-transform"></i>
                         </button>
+                        
+                        <!-- Bouton Déconnexion -->
                         <button ng-click="$ctrl.logout()"
-                                class="bg-red-100 text-red-600 p-2 rounded-lg hover:bg-red-200 transition">
+                                class="p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all group">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Gestion des fichiers -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-semibold">Mes fichiers</h3>
-                    <input type="file" id="fileUpload" multiple 
-                           ng-change="$ctrl.handleFileUpload($event)" class="hidden"
-                           accept="image/*,video/*">
-                    <button onclick="document.getElementById('fileUpload').click()"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
-                        <i class="fas fa-plus mr-2"></i>Ajouter des fichiers
-                    </button>
+            <!-- Statistiques Rapides -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue-500/10 text-blue-400">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{$ctrl.getFileCount('image')}}</div>
+                        <div class="stat-label">Photos</div>
+                    </div>
                 </div>
                 
-                <!-- Liste des fichiers -->
-                <div class="space-y-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple-500/10 text-purple-400">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{$ctrl.getFileCount('video')}}</div>
+                        <div class="stat-label">Vidéos</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon bg-emerald-500/10 text-emerald-400">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{$ctrl.getTotalSize()}} MB</div>
+                        <div class="stat-label">Stockage</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon bg-amber-500/10 text-amber-400">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{$ctrl.user.storageType === 'cloud' ? 'Cloud' : 'Local'}}</div>
+                        <div class="stat-label">Sécurité</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Principales -->
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button onclick="document.getElementById('fileUpload').click()"
+                        class="action-btn primary">
+                    <i class="fas fa-plus mr-2"></i>
+                    Ajouter des fichiers
+                </button>
+                
+                <button ng-click="$ctrl.selectAllFiles()" 
+                        ng-class="{'bg-amber-500/20 text-amber-400 border-amber-400/30': $ctrl.selectedFiles.length > 0, 'bg-slate-700/50 text-slate-300 border-slate-600': $ctrl.selectedFiles.length === 0}"
+                        class="action-btn">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Sélectionner ({{$ctrl.selectedFiles.length}})
+                </button>
+                
+                <button ng-click="$ctrl.downloadSelected()" 
+                        ng-disabled="$ctrl.selectedFiles.length === 0"
+                        class="action-btn" 
+                        ng-class="{'opacity-50 cursor-not-allowed': $ctrl.selectedFiles.length === 0}">
+                    <i class="fas fa-download mr-2"></i>
+                    Télécharger
+                </button>
+                
+                <button ng-click="$ctrl.deleteSelected()" 
+                        ng-disabled="$ctrl.selectedFiles.length === 0"
+                        class="action-btn danger"
+                        ng-class="{'opacity-50 cursor-not-allowed': $ctrl.selectedFiles.length === 0}">
+                    <i class="fas fa-trash mr-2"></i>
+                    Supprimer
+                </button>
+            </div>
+
+            <!-- Zone de dépôt de fichiers -->
+            <div class="file-drop-zone mb-6" 
+                 ng-class="{'drag-over': $ctrl.isDragOver}"
+                 ng-drop="$ctrl.handleFileDrop($files)"
+                 ng-drag-over="$ctrl.isDragOver = true"
+                 ng-drag-leave="$ctrl.isDragOver = false">
+                <div class="drop-content">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-indigo-400 mb-3"></i>
+                    <h3 class="text-lg font-semibold text-white mb-2">Déposez vos fichiers ici</h3>
+                    <p class="text-slate-400 text-sm">ou cliquez pour parcourir</p>
+                    <p class="text-xs text-slate-500 mt-2">Maximum 10MB par fichier</p>
+                </div>
+                <input type="file" id="fileUpload" multiple 
+                       ng-change="$ctrl.handleFileUpload($event)" class="hidden"
+                       accept="image/*,video/*">
+            </div>
+
+            <!-- Galerie de fichiers -->
+            <div class="gallery-container">
+                <div class="gallery-header">
+                    <h3 class="text-lg font-semibold text-white">Mes fichiers</h3>
+                    <div class="flex items-center space-x-4">
+                        <div class="view-toggle">
+                            <button ng-click="$ctrl.gridView = true" 
+                                    ng-class="{'active': $ctrl.gridView}"
+                                    class="view-btn">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button ng-click="$ctrl.gridView = false" 
+                                    ng-class="{'active': !$ctrl.gridView}"
+                                    class="view-btn">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                        <div class="sort-select">
+                            <select ng-model="$ctrl.sortBy" ng-change="$ctrl.sortFiles()"
+                                    class="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-1 text-slate-300 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <option value="name">Trier par nom</option>
+                                <option value="date">Trier par date</option>
+                                <option value="size">Trier par taille</option>
+                                <option value="type">Trier par type</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vue Grille -->
+                <div ng-if="$ctrl.gridView" class="gallery-grid">
                     <div ng-repeat="file in $ctrl.userFiles" 
-                         class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <div class="flex items-center space-x-3">
-                            <i class="fas {{file.type === 'image' ? 'fa-image' : 'fa-video'}} text-blue-600"></i>
-                            <div>
-                                <p class="font-medium">{{file.name}}</p>
-                                <p class="text-sm text-gray-500">{{file.size}} MB</p>
+                         class="gallery-item"
+                         ng-class="{'selected': $ctrl.isSelected(file)}"
+                         ng-click="$ctrl.toggleFileSelection(file)">
+                        <div class="item-thumbnail">
+                            <img ng-src="{{file.preview}}" ng-if="file.type === 'image'" alt="{{file.name}}">
+                            <div class="video-thumbnail" ng-if="file.type === 'video'">
+                                <i class="fas fa-play text-white/80"></i>
+                                <div class="video-overlay"></div>
+                            </div>
+                            <div class="file-type-indicator" ng-class="file.type">
+                                <i class="fas {{file.type === 'image' ? 'fa-image' : 'fa-video'}}"></i>
+                            </div>
+                            <div class="selection-overlay" ng-if="$ctrl.isSelected(file)">
+                                <i class="fas fa-check-circle text-white"></i>
                             </div>
                         </div>
-                        
-                        <div class="flex space-x-2">
-                            <button ng-click="$ctrl.downloadFile(file)"
-                                    class="text-green-600 hover:text-green-800 p-2">
+                        <div class="item-info">
+                            <div class="item-name" title="{{file.name}}">{{file.name | limitTo:15}}{{file.name.length > 15 ? '...' : ''}}</div>
+                            <div class="item-meta">
+                                <span class="item-size">{{file.size}} MB</span>
+                                <span class="item-date">{{file.date | date:'dd/MM'}}</span>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button ng-click="$ctrl.downloadFile(file); $event.stopPropagation()"
+                                    class="action-icon download">
                                 <i class="fas fa-download"></i>
                             </button>
-                            <button ng-click="$ctrl.deleteFile(file)"
-                                    class="text-red-600 hover:text-red-800 p-2">
+                            <button ng-click="$ctrl.deleteFile(file); $event.stopPropagation()"
+                                    class="action-icon delete">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>
-                    
-                    <div ng-if="$ctrl.userFiles.length === 0" class="text-center py-8 text-gray-500">
-                        <i class="fas fa-folder-open text-4xl mb-2"></i>
-                        <p>Aucun fichier pour le moment</p>
+                </div>
+
+                <!-- Vue Liste -->
+                <div ng-if="!$ctrl.gridView" class="file-list">
+                    <div ng-repeat="file in $ctrl.userFiles" 
+                         class="file-list-item"
+                         ng-class="{'selected': $ctrl.isSelected(file)}"
+                         ng-click="$ctrl.toggleFileSelection(file)">
+                        <div class="file-icon" ng-class="file.type">
+                            <i class="fas {{file.type === 'image' ? 'fa-image' : 'fa-video'}}"></i>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">{{file.name}}</div>
+                            <div class="file-meta">
+                                <span class="file-size">{{file.size}} MB</span>
+                                <span class="file-date">{{file.date | date:'dd/MM/yyyy HH:mm'}}</span>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button ng-click="$ctrl.downloadFile(file); $event.stopPropagation()"
+                                    class="list-action download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button ng-click="$ctrl.deleteFile(file); $event.stopPropagation()"
+                                    class="list-action delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Paramètres du profil -->
-        <div id="profileSettings" class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
-             ng-if="$ctrl.showProfileSettings">
-            <div class="bg-white rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
-                <h3 class="text-xl font-bold mb-4">Paramètres du profil</h3>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-gray-700 mb-2">Changer la photo de profil</label>
-                        <input type="file" accept="image/*" ng-change="$ctrl.updateProfilePhoto($event)"
-                               class="w-full p-2 border border-gray-300 rounded">
+                <!-- Message vide -->
+                <div ng-if="$ctrl.userFiles.length === 0" class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-folder-open text-5xl text-slate-500"></i>
                     </div>
-                    
-                    <div>
-                        <label class="block text-gray-700 mb-2">Changer le type de stockage</label>
-                        <select ng-model="$ctrl.user.storageType" 
-                                class="w-full p-3 border border-gray-300 rounded-lg">
-                            <option value="cloud">Stockage Cloud</option>
-                            <option value="local">Stockage Local (IndexDB)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex space-x-3 pt-4">
-                        <button ng-click="$ctrl.showProfileSettings = false"
-                                class="flex-1 bg-gray-300 text-gray-700 p-3 rounded-lg hover:bg-gray-400 transition">
-                            Annuler
-                        </button>
-                        <button ng-click="$ctrl.saveProfileSettings()"
-                                class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition">
-                            Sauvegarder
-                        </button>
-                        <button ng-click="$ctrl.deleteAccount()"
-                                class="flex-1 bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition">
-                            Supprimer le compte
-                        </button>
-                    </div>
+                    <h3 class="empty-title">Aucun fichier</h3>
+                    <p class="empty-description">Commencez par ajouter vos premiers fichiers</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal Paramètres du Profil -->
+    <div id="profileModal" ng-if="$ctrl.showProfileSettings" class="modal-overlay">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Paramètres du profil</h3>
+                <button ng-click="$ctrl.showProfileSettings = false" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4 class="section-title">Photo de profil</h4>
+                    <div class="photo-update">
+                        <div class="current-photo">
+                            <img ng-src="{{$ctrl.user.profilePhoto}}" ng-if="$ctrl.user.profilePhoto" 
+                                 class="profile-picture-large">
+                            <div class="default-photo-large" ng-if="!$ctrl.user.profilePhoto">
+                                <i class="fas fa-user text-slate-400"></i>
+                            </div>
+                        </div>
+                        <input type="file" id="updateProfilePhoto" accept="image/*" 
+                               ng-change="$ctrl.updateProfilePhoto($event)" class="hidden">
+                        <button onclick="document.getElementById('updateProfilePhoto').click()"
+                                class="photo-update-btn">
+                            <i class="fas fa-camera mr-2"></i>
+                            Changer la photo
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4 class="section-title">Type de stockage</h4>
+                    <div class="storage-settings">
+                        <div class="storage-option large"
+                             ng-class="{'storage-selected': $ctrl.user.storageType === 'cloud'}"
+                             ng-click="$ctrl.user.storageType = 'cloud'">
+                            <div class="storage-icon">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <div class="storage-info">
+                                <div class="storage-title">Stockage Cloud</div>
+                                <div class="storage-desc">Sécurisé et accessible partout</div>
+                            </div>
+                        </div>
+                        
+                        <div class="storage-option large"
+                             ng-class="{'storage-selected': $ctrl.user.storageType === 'local'}"
+                             ng-click="$ctrl.user.storageType = 'local'">
+                            <div class="storage-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="storage-info">
+                                <div class="storage-title">Stockage Local</div>
+                                <div class="storage-desc">Rapide et hors ligne</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section danger-zone">
+                    <h4 class="section-title text-red-400">Zone dangereuse</h4>
+                    <div class="danger-actions">
+                        <button ng-click="$ctrl.deleteAllFiles()" 
+                                class="danger-btn warning">
+                            <i class="fas fa-trash mr-2"></i>
+                            Supprimer tous les fichiers
+                        </button>
+                        <button ng-click="$ctrl.deleteAccount()" 
+                                class="danger-btn destructive">
+                            <i class="fas fa-user-slash mr-2"></i>
+                            Supprimer mon compte
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button ng-click="$ctrl.showProfileSettings = false" 
+                        class="btn-secondary">
+                    Annuler
+                </button>
+                <button ng-click="$ctrl.saveProfileSettings()" 
+                        class="btn-primary">
+                    Sauvegarder
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800/50 border-t border-slate-700/30 mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center">
+                <p class="text-slate-400 text-sm">
+                    &copy; 2024 SecretVault. Tous droits réservés.
+                </p>
+                <div class="footer-credits mt-2">
+                    <a href="https://badley08.github.io/Karlito" target="_blank" class="text-slate-500 hover:text-slate-300 text-xs">
+                        Développé par Karlito
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Import des scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
@@ -316,17 +582,39 @@
     
     <script>
         // Initialisation du menu hamburger
-        document.getElementById('menuBtn').addEventListener('click', function() {
+        document.getElementById('menuBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
             const menu = document.getElementById('dropdownMenu');
             menu.classList.toggle('hidden');
+        });
+
+        // Fermer le menu en cliquant ailleurs
+        document.addEventListener('click', function() {
+            const menu = document.getElementById('dropdownMenu');
+            if (!menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
         });
 
         // Masquer l'écran de chargement
         window.addEventListener('load', function() {
             setTimeout(function() {
                 document.getElementById('loading').style.display = 'none';
-            }, 1500);
+            }, 2000);
         });
+
+        // Service Worker pour PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
