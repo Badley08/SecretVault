@@ -1,7 +1,7 @@
-/* Reset basique */
+/* ========== RESET GLOBAL ========== */
 * {
-  margin: 0; 
-  padding: 0; 
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -34,7 +34,7 @@ body {
   border: 1px solid rgba(0, 102, 255, 0.1);
 }
 
-/* --- Menu Hamburger --- */
+/* ========== MENU HAMBURGER ========== */
 .hamburger-menu {
   position: absolute;
   top: 0;
@@ -93,7 +93,7 @@ body {
   padding-left: 8px;
 }
 
-/* --- Modal Auth --- */
+/* ========== MODAL AUTH ========== */
 .modal {
   position: fixed;
   top: 0;
@@ -138,11 +138,24 @@ body {
   }
 }
 
+.logo-modal {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+}
+
 .modal-content h2 {
-  margin-bottom: 25px;
+  margin-bottom: 10px;
   color: #0066ff;
   font-size: 1.8rem;
   text-shadow: 0 0 10px rgba(0, 102, 255, 0.3);
+}
+
+.subtitle {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
 }
 
 .modal-content p {
@@ -151,8 +164,32 @@ body {
   font-size: 0.9rem;
 }
 
+.separator {
+  position: relative;
+  text-align: center;
+  margin: 20px 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.separator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #666, transparent);
+  z-index: -1;
+}
+
+.separator span {
+  background: rgba(31, 31, 31, 0.98);
+  padding: 0 10px;
+}
+
 .storage-choice-prompt {
-  margin: 25px 0 15px;
+  margin: 20px 0 15px;
   padding-bottom: 15px;
   border-bottom: 2px dashed rgba(0, 102, 255, 0.3);
 }
@@ -174,7 +211,7 @@ body {
   width: 56px;
   height: 56px;
   border: 2px solid rgba(0, 102, 255, 0.3);
-  border-radius: 50%;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -265,7 +302,6 @@ body {
   cursor: not-allowed;
 }
 
-/* Loader */
 .loader {
   display: none;
   width: 50px;
@@ -282,7 +318,7 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* --- Header / Gallery / Actions --- */
+/* ========== HEADER ========== */
 header {
   display: flex;
   justify-content: space-between;
@@ -291,11 +327,21 @@ header {
   padding-top: 5px;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .app-logo {
+  width: 50px;
   height: 50px;
-  width: auto;
-  font-size: 2rem;
-  font-weight: bold;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+}
+
+header h1 {
+  font-size: 1.8rem;
   color: #0066ff;
   text-shadow: 0 0 10px rgba(0, 102, 255, 0.3);
 }
@@ -340,6 +386,7 @@ header {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
+/* ========== WELCOME MESSAGE ========== */
 .welcome-message {
   text-align: center;
   color: #4facfe;
@@ -364,6 +411,7 @@ header {
   display: none;
 }
 
+/* ========== GALLERY ACTIONS ========== */
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -397,6 +445,7 @@ header {
   box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
 }
 
+/* ========== GALLERY ========== */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -522,7 +571,7 @@ header {
   margin-bottom: 10px;
 }
 
-/* Footer */
+/* ========== FOOTER ========== */
 footer {
   margin-top: 30px;
   padding-top: 15px;
@@ -549,12 +598,12 @@ footer {
   text-decoration: underline;
 }
 
-/* Utilitaires */
+/* ========== UTILITIES ========== */
 .hidden {
   display: none !important;
 }
 
-/* Responsive */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 600px) {
   .container {
     padding: 16px;
@@ -583,5 +632,18 @@ footer {
 
   header {
     margin-bottom: 20px;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+  }
+
+  .header-left {
+    gap: 10px;
+  }
+
+  .app-logo {
+    width: 40px;
+    height: 40px;
   }
 }
