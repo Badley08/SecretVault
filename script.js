@@ -1,12 +1,15 @@
-// Firebase Configuration - MODULAR SDK
+// ========== FIREBASE CONFIG VIA CDN ========== 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged, 
-  updateProfile 
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import { 
   getFirestore, 
@@ -28,11 +31,10 @@ import {
   deleteObject 
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
 
-// Firebase Config
+// ========== TA CONFIGURATION FIREBASE ========== 
 const firebaseConfig = {
   apiKey: "AIzaSyBVeTFmzq0KGDnGDVw-9aad6VXyWSSUDOA",
   authDomain: "secretvault-3039b.firebaseapp.com",
-  databaseURL: "https://secretvault-3039b-default-rtdb.firebaseio.com",
   projectId: "secretvault-3039b",
   storageBucket: "secretvault-3039b.firebasestorage.app",
   messagingSenderId: "243494550983",
@@ -40,17 +42,20 @@ const firebaseConfig = {
   measurementId: "G-WTZ5NMZPRW"
 };
 
-// Initialize Firebase
+// ========== INITIALISER FIREBASE ========== 
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider();
 
-// ========== DOM ELEMENTS ==========
+// ========== DOM ELEMENTS ========== 
 const authModal = document.getElementById('authModal');
 const authForm = document.getElementById('authForm');
 const authLoader = document.getElementById('authLoader');
 const btnAuthSubmit = document.getElementById('btnAuthSubmit');
+const btnGoogle = document.getElementById('btnGoogle');
 const btnLocalMode = document.getElementById('btnLocalMode');
 const btnCloudMode = document.getElementById('btnCloudMode');
 const choiceBtns = document.querySelectorAll('.choice-btn');
@@ -69,13 +74,20 @@ const menuLinks = document.getElementById('menuLinks');
 const storageBadge = document.getElementById('storageBadge');
 const photoCounter = document.getElementById('photoCounter');
 
-// ========== GLOBAL STATE ==========
+// ========== STATE GLOBAL ========== 
 let storageChoice = 'local';
 let user = null;
-let photosData = []; // Stockage des métadonnées des photos
 
-// ========== UTILITY FUNCTIONS ==========
+// ========== SERVICE WORKER REGISTRATION (PWA) ========== 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    console.log('✓ Service Worker enregistré');
+  }).catch(err => {
+    console.warn('✗ Service Worker non enregistré:', err);
+  });
+}
 
+// ========== UTILITY FUNCTIONS ========== 
 function showLoader(on) {
   authLoader.style.display = on ? 'block' : 'none';
   btnAuthSubmit.disabled = on;
@@ -132,29 +144,28 @@ function downloadImage(src, name) {
   document.body.removeChild(link);
 }
 
-// ========== MENU TOGGLE ==========
+// ========== MENU TOGGLE ========== 
 menuToggle.addEventListener('click', () => {
   menuLinks.classList.toggle('open');
 });
 
-// Close menu when link is clicked
 menuLinks.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', () => {
     menuLinks.classList.remove('open');
   });
 });
 
-// ========== STORAGE CHOICE HANDLERS ==========
+// ========== STORAGE CHOICE ========== 
 choiceBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     choiceBtns.forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     storageChoice = btn.getAttribute('data-storage');
-    
+
     const usernameInput = document.getElementById('username');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
-    
+
     usernameInput.style.display = (storageChoice === 'cloud' ? 'block' : 'none');
     emailInput.required = (storageChoice === 'cloud');
     passwordInput.required = (storageChoice === 'cloud');
@@ -167,15 +178,39 @@ choiceBtns.forEach(btn => {
   });
 });
 
-// Initialiser au mode local par défaut
 btnLocalMode.click();
 
-// ========== AUTHENTICATION HANDLERS ==========
+// ========== GOOGLE SIGN IN ========== 
+btnGoogle.addEventListener('click', async () => {
+  showLoader(true);
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    user = result.user;
+    storageChoice = 'cloud';
+    btnCloudMode.click();
+    
+    // Créer le document utilisateur
+    await setDoc(doc(db, 'users', user.uid), {
+      username: user.displayName || user.email.split('@')[0],
+      email: user.email,
+      profilePicUrl: user.photoURL || null,
+      createdAt: new Date()
+    }, { merge: true });
+
+    handleLoginSuccess(user);
+  } catch (error) {
+    console.error('Erreur Google Sign In:', error);
+    alert('Erreur: ' + error.message);
+  } finally {
+    showLoader(false);
+  }
+});
+
+// ========== EMAIL/PASSWORD AUTH ========== 
 authForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   if (storageChoice === 'local') {
-    // Mode Local - pas d'authentification Firebase
     user = { 
       uid: 'local_user', 
       email: 'local@device.com', 
@@ -185,40 +220,36 @@ authForm.addEventListener('submit', async (e) => {
     return;
   }
 
-  // Mode Cloud (Firebase)
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const displayName = document.getElementById('username').value;
-  
+
   showLoader(true);
   try {
     let authResult;
     
     try {
-      // Tentative de connexion
       authResult = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Connexion réussie");
+      console.log("✓ Connexion réussie");
     } catch (error) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        // Inscription
         authResult = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(authResult.user, { 
           displayName: displayName || email.split('@')[0] 
         });
-        
-        // Créer le document utilisateur dans Firestore
+
         await setDoc(doc(db, 'users', authResult.user.uid), {
           username: displayName,
           email: email,
           profilePicUrl: null,
           createdAt: new Date()
         });
-        console.log("Inscription réussie");
+        console.log("✓ Inscription réussie");
       } else {
         throw error;
       }
     }
-    
+
     user = authResult.user;
     handleLoginSuccess(user);
 
@@ -247,30 +278,28 @@ function handleLoginSuccess(userObj) {
   checkEmptyGallery();
 }
 
-// ========== LOGOUT HANDLER ==========
+// ========== LOGOUT ========== 
 btnLogout.addEventListener('click', async () => {
   if (storageChoice === 'cloud') {
     await signOut(auth);
   }
-  
-  // Réinitialisation
+
   user = null;
   storageChoice = 'local';
-  photosData = [];
-  
+
   authModal.style.display = 'flex';
   gallerySection.classList.add('hidden');
   btnLogout.style.display = 'none';
   gallery.innerHTML = '';
-  
+
   clearWelcomeMessage();
-  profilePicture.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%230066ff%22/%3E%3Ctext x=%2250%22 y=%2255%22 font-size=%2260%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22%3EU%3C/text%3E%3C/svg%3E';
-  
+  profilePicture.src = 'secretvault.png';
+
   alert("Vous êtes déconnecté. À bientôt !");
   btnLocalMode.click();
 });
 
-// ========== AUTH STATE OBSERVER ==========
+// ========== AUTH STATE OBSERVER ========== 
 onAuthStateChanged(auth, (firebaseUser) => {
   if (firebaseUser) {
     document.getElementById('email').value = firebaseUser.email || '';
@@ -287,16 +316,14 @@ onAuthStateChanged(auth, (firebaseUser) => {
   }
 });
 
-// ========== PHOTO MANAGEMENT ==========
-
-// Ajouter des photos
+// ========== ADD PHOTOS ========== 
 btnAddPhotos.addEventListener('click', () => {
   inputPhotos.click();
 });
 
 inputPhotos.addEventListener('change', async (e) => {
   const files = Array.from(e.target.files);
-  
+
   for (let f of files) {
     if (f.size > 10 * 1024 * 1024) {
       alert(`Fichier ${f.name} trop gros (>10MB). Ignoré.`);
@@ -316,13 +343,12 @@ inputPhotos.addEventListener('change', async (e) => {
       alert("Erreur lors de l'ajout de la photo.");
     }
   }
-  
+
   inputPhotos.value = '';
   checkEmptyGallery();
 });
 
-// ========== LOCAL STORAGE MANAGEMENT ==========
-
+// ========== LOCAL STORAGE ========== 
 function saveToLocal(name, dataUrl) {
   let arr = JSON.parse(localStorage.getItem('sv_photos') || '[]');
   arr.push({ 
@@ -339,19 +365,14 @@ function deleteFromLocal(index) {
   localStorage.setItem('sv_photos', JSON.stringify(arr));
 }
 
-// ========== CLOUD STORAGE MANAGEMENT ==========
-
+// ========== CLOUD STORAGE ========== 
 async function uploadToCloud(file) {
   const photoRef = ref(storage, `users/${user.uid}/photos/${Date.now()}_${file.name}`);
-  
-  try {
-    // Upload vers Storage
-    const snapshot = await uploadBytes(photoRef, file);
-    const downloadURL = await getBytes(snapshot.ref).then(() => {
-      return `https://firebasestorage.googleapis.com/v0/b/${storage.bucket}/o/users%2F${user.uid}%2Fphotos%2F${Date.now()}_${encodeURIComponent(file.name)}?alt=media`;
-    });
 
-    // Enregistrement des métadonnées dans Firestore
+  try {
+    const snapshot = await uploadBytes(photoRef, file);
+    const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${storage.bucket}/o/users%2F${user.uid}%2Fphotos%2F${Date.now()}_${encodeURIComponent(file.name)}?alt=media`;
+
     const docRef = await addDoc(collection(db, 'users', user.uid, 'gallery'), {
       name: file.name,
       storagePath: snapshot.ref.fullPath,
@@ -359,7 +380,6 @@ async function uploadToCloud(file) {
       timestamp: new Date()
     });
 
-    // Affichage
     addToGallery(downloadURL, file.name, 'cloud', docRef.id);
   } catch (error) {
     console.error("Erreur upload cloud:", error);
@@ -367,20 +387,19 @@ async function uploadToCloud(file) {
   }
 }
 
-// ========== GALLERY MANAGEMENT ==========
-
+// ========== GALLERY MANAGEMENT ========== 
 function addToGallery(dataUrl, name, source, docId = null) {
   const item = document.createElement('div');
   item.className = 'gallery-item';
-  
+
   const img = document.createElement('img');
   img.src = dataUrl;
   img.alt = name;
   img.loading = 'lazy';
-  
+
   const actions = document.createElement('div');
   actions.className = 'gallery-actions';
-  
+
   const downloadBtn = document.createElement('button');
   downloadBtn.className = 'gallery-btn gallery-btn-download';
   downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
@@ -389,7 +408,7 @@ function addToGallery(dataUrl, name, source, docId = null) {
     e.stopPropagation();
     downloadImage(dataUrl, name);
   });
-  
+
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'gallery-btn gallery-btn-delete';
   deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
@@ -416,10 +435,10 @@ function addToGallery(dataUrl, name, source, docId = null) {
       }
     }
   });
-  
+
   actions.appendChild(downloadBtn);
   actions.appendChild(deleteBtn);
-  
+
   item.appendChild(img);
   item.appendChild(actions);
   gallery.appendChild(item);
@@ -427,12 +446,11 @@ function addToGallery(dataUrl, name, source, docId = null) {
 
 async function loadGallery() {
   gallery.innerHTML = '';
-  photosData = [];
-  
+
   if (storageChoice === 'local') {
     const arr = JSON.parse(localStorage.getItem('sv_photos') || '[]');
-    arr.forEach((obj, index) => {
-      addToGallery(obj.dataUrl, obj.name, 'local', index);
+    arr.forEach((obj) => {
+      addToGallery(obj.dataUrl, obj.name, 'local');
     });
   } else if (storageChoice === 'cloud' && user) {
     try {
@@ -451,10 +469,10 @@ async function loadGallery() {
   }
 }
 
-// ========== CLEAR ALL PHOTOS ==========
+// ========== CLEAR ALL PHOTOS ========== 
 btnClearAll.addEventListener('click', async () => {
   if (!confirm("Confirmer la suppression de TOUTES les photos ? Cette action est irréversible.")) return;
-  
+
   showLoader(true);
 
   try {
@@ -464,7 +482,7 @@ btnClearAll.addEventListener('click', async () => {
     } else if (storageChoice === 'cloud' && user) {
       const galleryRef = collection(db, 'users', user.uid, 'gallery');
       const snapshot = await getDocs(galleryRef);
-      
+
       for (let docSnapshot of snapshot.docs) {
         const data = docSnapshot.data();
         try {
@@ -486,8 +504,7 @@ btnClearAll.addEventListener('click', async () => {
   }
 });
 
-// ========== PROFILE PICTURE ==========
-
+// ========== PROFILE PICTURE ========== 
 async function loadUserProfile(uid) {
   try {
     const userDoc = await getDoc(doc(db, 'users', uid));
@@ -503,7 +520,7 @@ async function loadUserProfile(uid) {
 inputProfilePic.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file || storageChoice !== 'cloud' || !user) return;
-  
+
   if (file.size > 5 * 1024 * 1024) {
     alert("La photo de profil est trop grosse (>5MB).");
     return;
@@ -518,7 +535,7 @@ inputProfilePic.addEventListener('change', async (e) => {
     await setDoc(doc(db, 'users', user.uid), {
       profilePicUrl: downloadURL
     }, { merge: true });
-    
+
     profilePicture.src = downloadURL;
     alert("Photo de profil mise à jour avec succès !");
   } catch (error) {
@@ -530,12 +547,5 @@ inputProfilePic.addEventListener('change', async (e) => {
   }
 });
 
-// ========== SERVICE WORKER REGISTRATION (PWA) ==========
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(err => {
-    console.log('Service Worker non enregistré:', err);
-  });
-}
-
-// ========== INITIAL CHECK ==========
+// ========== INITIAL CHECK ========== 
 checkEmptyGallery();
