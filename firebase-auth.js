@@ -11,9 +11,21 @@ const firebaseConfig = {
 };
 
 // Initialisation Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-console.log('Firebase initialisé avec succès');
+try {
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    
+    console.log('Firebase initialisé avec succès');
+    
+    // Configuration CORS pour Firebase
+    const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    };
+    
+} catch (error) {
+    console.error('Erreur Firebase:', error);
+}
