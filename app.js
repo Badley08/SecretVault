@@ -27,44 +27,28 @@ angular.module('secretVaultApp', [])
     
     // Initialisation
     ctrl.init = function() {
+        console.log('Initialisation de SecretVault...');
+        
         // Vérifier si l'utilisateur est déjà connecté
         const savedUser = localStorage.getItem('secretVaultUser');
         if (savedUser) {
-            ctrl.user = JSON.parse(savedUser);
-            ctrl.loadUserFiles();
-        }
-        
-        // Initialiser IndexDB
-        ctrl.initIndexDB();
-    };
-    
-    // Gestion IndexDB
-    ctrl.initIndexDB = function() {
-        if (!window.indexedDB) {
-            console.warn("IndexDB n'est pas supporté");
-            return;
-        }
-        
-        const request = indexedDB.open('SecretVaultDB', 1);
-        
-        request.onupgradeneeded = function(event) {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('files')) {
-                const store = db.createObjectStore('files', { keyPath: 'id', autoIncrement: true });
-                store.createIndex('name', 'name', { unique: false });
-                store.createIndex('type', 'type', { unique: false });
-                store.createIndex('date', 'date', { unique: false });
+            try {
+                ctrl.user = JSON.parse(savedUser);
+                console.log('Utilisateur trouvé:', ctrl.user);
+                ctrl.loadUserFiles();
+            } catch (e) {
+                console.error('Erreur parsing user:', e);
+                localStorage.removeItem('secretVaultUser');
             }
-        };
+        }
         
-        request.onsuccess = function(event) {
-            ctrl.db = event.target.result;
-            console.log('IndexDB initialisé');
-        };
-        
-        request.onerror = function(event) {
-            console.error('Erreur IndexDB:', event.target.error);
-        };
+        // Masquer le loader après l'initialisation
+        $timeout(function() {
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) {
+                loadingElement.style.display = 'none';
+            }
+        }, 1000);
     };
     
     // Gestion de la photo de profil
@@ -76,11 +60,17 @@ angular.module('secretVaultApp', [])
                 return;
             }
             
+            if (!file.type.startsWith('image/')) {
+                ctrl.showNotification('Veuillez sélectionner une image valide', 'error');
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 ctrl.profilePreview = e.target.result;
                 ctrl.registerData.profilePhoto = e.target.result;
                 $scope.$apply();
+                console.log('Photo de profil chargée');
             };
             reader.readAsDataURL(file);
         }
@@ -98,7 +88,7 @@ angular.module('secretVaultApp', [])
         // Simulation d'authentification
         $timeout(function() {
             const user = {
-                id: Date.now().toString(),
+                id: 'user_' + Date.now(),
                 username: ctrl.loginData.username,
                 profilePhoto: null,
                 storageType: 'cloud',
@@ -110,7 +100,8 @@ angular.module('secretVaultApp', [])
             ctrl.loadUserFiles();
             ctrl.hideLoading();
             ctrl.showNotification('Connexion réussie!', 'success');
-        }, 1500);
+            console.log('Utilisateur connecté:', user);
+        }, 1000);
     };
     
     // Inscription
@@ -130,10 +121,10 @@ angular.module('secretVaultApp', [])
         // Simulation d'inscription
         $timeout(function() {
             const user = {
-                id: Date.now().toString(),
+                id: 'user_' + Date.now(),
                 username: ctrl.registerData.username,
-                profilePhoto: ctrl.registerData.profilePhoto,
-                storageType: ctrl.registerData.storageType,
+                profilePhoto: ctrl.registerData.profilePhoto || null,
+                storageType: ctrl.registerData.storageType || 'cloud',
                 createdAt: new Date().toISOString()
             };
             
@@ -142,7 +133,8 @@ angular.module('secretVaultApp', [])
             ctrl.showRegister = false;
             ctrl.hideLoading();
             ctrl.showNotification('Compte créé avec succès!', 'success');
-        }, 2000);
+            console.log('Nouvel utilisateur:', user);
+        }, 1500);
     };
     
     // Déconnexion
@@ -153,98 +145,106 @@ angular.module('secretVaultApp', [])
         ctrl.loginData = {};
         localStorage.removeItem('secretVaultUser');
         ctrl.showNotification('Déconnexion réussie', 'info');
+        console.log('Utilisateur déconnecté');
     };
     
-    // Gestion des fichiers
+    // Gestion des fichiers - UNIQUEMENT DES IMAGES
     ctrl.handleFileUpload = function(event) {
         const files = event.target.files;
-        ctrl.processFiles(files);
+        ctrl.processFiles(Array.from(files));
         event.target.value = '';
     };
     
     ctrl.handleFileDrop = function(files) {
-        ctrl.processFiles(files);
+        ctrl.processFiles(Array.from(files));
         ctrl.isDragOver = false;
     };
     
     ctrl.processFiles = function(files) {
+        if (!files || files.length === 0) return;
+        
         let validFiles = 0;
+        let newFiles = [];
         
         for (let file of files) {
+            // Vérifier que c'est une image
+            if (!file.type.startsWith('image/')) {
+                ctrl.showNotification(`"${file.name}" n'est pas une image valide`, 'error');
+                continue;
+            }
+            
+            // Vérifier la taille
             if (file.size > 10 * 1024 * 1024) {
-                ctrl.showNotification(`Le fichier "${file.name}" dépasse 10MB`, 'error');
+                ctrl.showNotification(`"${file.name}" dépasse 10MB`, 'error');
                 continue;
             }
             
             validFiles++;
+            
             const fileObj = {
-                id: Date.now() + Math.random(),
+                id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                 name: file.name,
                 size: (file.size / (1024 * 1024)).toFixed(2),
-                type: file.type.startsWith('image') ? 'image' : 'video',
+                type: 'image',
                 date: new Date().toISOString(),
                 file: file
             };
             
-            // Générer un aperçu pour les images
-            if (file.type.startsWith('image')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    fileObj.preview = e.target.result;
+            // Générer un aperçu
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                fileObj.preview = e.target.result;
+                newFiles.push(fileObj);
+                
+                // Quand tous les fichiers sont traités
+                if (newFiles.length === validFiles) {
+                    ctrl.userFiles = [...newFiles, ...ctrl.userFiles];
+                    ctrl.saveUserFiles();
                     $scope.$apply();
-                };
-                reader.readAsDataURL(file);
-            }
-            
-            ctrl.userFiles.unshift(fileObj);
-            
-            // Sauvegarder selon le type de stockage
-            if (ctrl.user.storageType === 'local') {
-                ctrl.saveFileToIndexDB(fileObj);
-            } else {
-                ctrl.saveFileToCloud(fileObj);
-            }
+                    console.log('Fichiers ajoutés:', newFiles.length);
+                }
+            };
+            reader.readAsDataURL(file);
         }
         
         if (validFiles > 0) {
-            ctrl.showNotification(`${validFiles} fichier(s) ajouté(s)`, 'success');
-            ctrl.saveUserFiles();
+            ctrl.showNotification(`${validFiles} image(s) ajoutée(s)`, 'success');
         }
     };
     
     // Sauvegarde des fichiers
-    ctrl.saveFileToIndexDB = function(fileObj) {
-        if (!ctrl.db) return;
-        
-        const transaction = ctrl.db.transaction(['files'], 'readwrite');
-        const store = transaction.objectStore('files');
-        
-        // Créer une copie sans l'objet File (non sérialisable)
-        const fileData = {
-            id: fileObj.id,
-            name: fileObj.name,
-            size: fileObj.size,
-            type: fileObj.type,
-            date: fileObj.date,
-            preview: fileObj.preview
-        };
-        
-        store.add(fileData);
-    };
-    
-    ctrl.saveFileToCloud = function(fileObj) {
-        // Simulation de sauvegarde cloud
-        console.log('Sauvegarde cloud:', fileObj.name);
-    };
-    
     ctrl.saveUserFiles = function() {
-        localStorage.setItem('secretVaultFiles_' + ctrl.user.id, JSON.stringify(ctrl.userFiles));
+        if (ctrl.user) {
+            // Ne sauvegarder que les données nécessaires (sans l'objet File)
+            const filesToSave = ctrl.userFiles.map(file => ({
+                id: file.id,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                date: file.date,
+                preview: file.preview
+            }));
+            
+            localStorage.setItem('secretVaultFiles_' + ctrl.user.id, JSON.stringify(filesToSave));
+            console.log('Fichiers sauvegardés:', filesToSave.length);
+        }
     };
     
     ctrl.loadUserFiles = function() {
-        const savedFiles = localStorage.getItem('secretVaultFiles_' + ctrl.user.id);
-        if (savedFiles) {
-            ctrl.userFiles = JSON.parse(savedFiles);
+        if (ctrl.user) {
+            const savedFiles = localStorage.getItem('secretVaultFiles_' + ctrl.user.id);
+            if (savedFiles) {
+                try {
+                    ctrl.userFiles = JSON.parse(savedFiles);
+                    console.log('Fichiers chargés:', ctrl.userFiles.length);
+                } catch (e) {
+                    console.error('Erreur parsing files:', e);
+                    ctrl.userFiles = [];
+                }
+            } else {
+                ctrl.userFiles = [];
+                console.log('Aucun fichier sauvegardé trouvé');
+            }
         }
     };
     
@@ -256,6 +256,7 @@ angular.module('secretVaultApp', [])
         } else {
             ctrl.selectedFiles.push(file);
         }
+        console.log('Fichiers sélectionnés:', ctrl.selectedFiles.length);
     };
     
     ctrl.isSelected = function(file) {
@@ -268,6 +269,7 @@ angular.module('secretVaultApp', [])
         } else {
             ctrl.selectedFiles = [...ctrl.userFiles];
         }
+        console.log('Tous les fichiers sélectionnés:', ctrl.selectedFiles.length);
     };
     
     // Téléchargement
@@ -276,17 +278,25 @@ angular.module('secretVaultApp', [])
             const link = document.createElement('a');
             link.href = file.preview;
             link.download = file.name;
+            document.body.appendChild(link);
             link.click();
-            ctrl.showNotification(`Téléchargement de "${file.name}"`, 'success');
+            document.body.removeChild(link);
+            ctrl.showNotification(`"${file.name}" téléchargé`, 'success');
         } else {
             ctrl.showNotification('Impossible de télécharger ce fichier', 'error');
         }
     };
     
     ctrl.downloadSelected = function() {
+        if (ctrl.selectedFiles.length === 0) {
+            ctrl.showNotification('Aucun fichier sélectionné', 'warning');
+            return;
+        }
+        
         ctrl.selectedFiles.forEach(file => {
             ctrl.downloadFile(file);
         });
+        
         ctrl.showNotification(`${ctrl.selectedFiles.length} fichier(s) téléchargé(s)`, 'success');
     };
     
@@ -299,12 +309,16 @@ angular.module('secretVaultApp', [])
                 ctrl.removeFromSelection(file);
                 ctrl.saveUserFiles();
                 ctrl.showNotification('Fichier supprimé', 'info');
+                console.log('Fichier supprimé:', file.name);
             }
         }
     };
     
     ctrl.deleteSelected = function() {
-        if (ctrl.selectedFiles.length === 0) return;
+        if (ctrl.selectedFiles.length === 0) {
+            ctrl.showNotification('Aucun fichier sélectionné', 'warning');
+            return;
+        }
         
         if (confirm(`Supprimer ${ctrl.selectedFiles.length} fichier(s) sélectionné(s) ?`)) {
             ctrl.userFiles = ctrl.userFiles.filter(file => 
@@ -313,17 +327,22 @@ angular.module('secretVaultApp', [])
             ctrl.selectedFiles = [];
             ctrl.saveUserFiles();
             ctrl.showNotification('Fichiers supprimés', 'info');
+            console.log('Fichiers sélectionnés supprimés');
         }
     };
     
     ctrl.deleteAllFiles = function() {
-        if (ctrl.userFiles.length === 0) return;
+        if (ctrl.userFiles.length === 0) {
+            ctrl.showNotification('Aucun fichier à supprimer', 'warning');
+            return;
+        }
         
         if (confirm('Supprimer tous les fichiers ? Cette action est irréversible.')) {
             ctrl.userFiles = [];
             ctrl.selectedFiles = [];
             ctrl.saveUserFiles();
             ctrl.showNotification('Tous les fichiers ont été supprimés', 'info');
+            console.log('Tous les fichiers supprimés');
         }
     };
     
@@ -337,17 +356,26 @@ angular.module('secretVaultApp', [])
     // Gestion du profil
     ctrl.updateProfilePhoto = function(event) {
         const file = event.target.files[0];
-        if (file && file.size <= 10 * 1024 * 1024) {
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                ctrl.showNotification('La photo ne doit pas dépasser 10MB', 'error');
+                return;
+            }
+            
+            if (!file.type.startsWith('image/')) {
+                ctrl.showNotification('Veuillez sélectionner une image valide', 'error');
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 ctrl.user.profilePhoto = e.target.result;
                 localStorage.setItem('secretVaultUser', JSON.stringify(ctrl.user));
                 $scope.$apply();
                 ctrl.showNotification('Photo de profil mise à jour', 'success');
+                console.log('Photo de profil mise à jour');
             };
             reader.readAsDataURL(file);
-        } else if (file) {
-            ctrl.showNotification('La photo ne doit pas dépasser 10MB', 'error');
         }
     };
     
@@ -355,14 +383,18 @@ angular.module('secretVaultApp', [])
         localStorage.setItem('secretVaultUser', JSON.stringify(ctrl.user));
         ctrl.showProfileSettings = false;
         ctrl.showNotification('Paramètres sauvegardés', 'success');
+        console.log('Paramètres sauvegardés');
     };
     
     ctrl.deleteAccount = function() {
         if (confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Toutes vos données seront perdues.')) {
-            localStorage.removeItem('secretVaultUser');
-            localStorage.removeItem('secretVaultFiles_' + ctrl.user.id);
+            if (ctrl.user) {
+                localStorage.removeItem('secretVaultUser');
+                localStorage.removeItem('secretVaultFiles_' + ctrl.user.id);
+            }
             ctrl.logout();
             ctrl.showNotification('Compte supprimé avec succès', 'info');
+            console.log('Compte utilisateur supprimé');
         }
     };
     
@@ -372,7 +404,7 @@ angular.module('secretVaultApp', [])
     };
     
     ctrl.getTotalSize = function() {
-        const total = ctrl.userFiles.reduce((sum, file) => sum + parseFloat(file.size), 0);
+        const total = ctrl.userFiles.reduce((sum, file) => sum + parseFloat(file.size || 0), 0);
         return total.toFixed(1);
     };
     
@@ -391,11 +423,11 @@ angular.module('secretVaultApp', [])
                 ctrl.userFiles.sort((a, b) => a.type.localeCompare(b.type));
                 break;
         }
+        console.log('Fichiers triés par:', ctrl.sortBy);
     };
     
     // Notifications
     ctrl.showNotification = function(message, type = 'info') {
-        // Créer une notification toast
         const toast = document.createElement('div');
         toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg border backdrop-blur-lg transform translate-x-full transition-transform duration-300 ${
             type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
@@ -412,7 +444,7 @@ angular.module('secretVaultApp', [])
                     type === 'warning' ? 'fa-exclamation-triangle' :
                     'fa-info-circle'
                 }"></i>
-                <span>${message}</span>
+                <span class="text-sm font-medium">${message}</span>
             </div>
         `;
         
@@ -427,19 +459,29 @@ angular.module('secretVaultApp', [])
         $timeout(() => {
             toast.style.transform = 'translateX(100%)';
             $timeout(() => {
-                document.body.removeChild(toast);
+                if (toast.parentNode) {
+                    document.body.removeChild(toast);
+                }
             }, 300);
         }, 3000);
     };
     
     ctrl.showLoading = function() {
-        document.getElementById('loading').style.display = 'flex';
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'flex';
+        }
     };
     
     ctrl.hideLoading = function() {
-        document.getElementById('loading').style.display = 'none';
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
     };
     
-    // Initialisation
-    ctrl.init();
+    // Initialisation automatique
+    $timeout(function() {
+        ctrl.init();
+    });
 });
