@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SecretVault - Stockez vos fichiers en toute sécurité avec un design élégant">
+    <meta name="description" content="SecretVault - Stockez vos images en toute sécurité avec un design élégant">
     <meta name="author" content="Karlito">
     <meta name="email" content="karlluberisse1308@gmail.com">
     <meta name="theme-color" content="#6366f1">
-    <meta name="keywords" content="secretvault, stockage, photos, vidéos, sécurisé, cloud, local">
+    <meta name="keywords" content="secretvault, stockage, photos, images, sécurisé, cloud, local">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -18,7 +18,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <title>SecretVault - Stockage Sécurisé Élégant</title>
+    <title>SecretVault - Stockage d'Images Sécurisé</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen" ng-controller="MainController as $ctrl">
@@ -50,12 +50,6 @@
                         <i class="fas fa-heart mr-3 text-pink-400 group-hover:text-pink-300"></i>
                         <span>Me soutenir sur Ko-fi</span>
                     </a>
-                    <div class="border-t border-slate-700 mt-2 pt-2">
-                        <a href="#" class="flex items-center px-4 py-2 text-slate-400 hover:text-slate-200 text-sm">
-                            <i class="fas fa-info-circle mr-2"></i>
-                            À propos de SecretVault
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -85,11 +79,11 @@
                 <h2 class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent mb-2">
                     SecretVault
                 </h2>
-                <p class="text-slate-400">Stockage sécurisé et élégant</p>
+                <p class="text-slate-400">Stockage sécurisé d'images</p>
             </div>
 
             <!-- Formulaire de Connexion -->
-            <div id="loginForm" class="auth-form fade-in-up">
+            <div id="loginForm" class="auth-form fade-in-up" ng-if="!$ctrl.showRegister">
                 <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700/50 shadow-2xl">
                     <h3 class="text-xl font-semibold text-white mb-6 text-center">Connexion</h3>
                     
@@ -123,7 +117,7 @@
             </div>
 
             <!-- Formulaire d'Inscription -->
-            <div id="registerForm" ng-if="$ctrl.showRegister" class="auth-form fade-in-up">
+            <div id="registerForm" class="auth-form fade-in-up" ng-if="$ctrl.showRegister">
                 <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700/50 shadow-2xl">
                     <h3 class="text-xl font-semibold text-white mb-6 text-center">Créer un compte</h3>
                     
@@ -145,7 +139,7 @@
                                         </div>
                                     </div>
                                     <input type="file" id="profilePhoto" accept="image/*" 
-                                           class="hidden" ng-change="$ctrl.handleProfilePhoto($event)">
+                                           class="hidden">
                                     <button type="button" onclick="document.getElementById('profilePhoto').click()"
                                             class="flex-1 bg-slate-700/50 text-slate-300 px-4 py-3 rounded-xl border border-slate-600 hover:bg-slate-700 hover:text-white transition flex items-center justify-center space-x-2">
                                         <i class="fas fa-upload"></i>
@@ -198,9 +192,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <p class="text-xs text-slate-500 mt-3 text-center">
-                                    Vous pourrez changer cette préférence à tout moment
-                                </p>
                             </div>
                         </div>
                         
@@ -242,7 +233,7 @@
                                     {{$ctrl.user.storageType === 'cloud' ? 'Stockage Cloud' : 'Stockage Local'}}
                                 </span>
                                 <span class="text-slate-400 text-sm">
-                                    • {{$ctrl.userFiles.length}} fichier(s)
+                                    • {{$ctrl.userFiles.length}} image(s)
                                 </span>
                             </div>
                         </div>
@@ -271,18 +262,8 @@
                         <i class="fas fa-images"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-number">{{$ctrl.getFileCount('image')}}</div>
-                        <div class="stat-label">Photos</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon bg-purple-500/10 text-purple-400">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-number">{{$ctrl.getFileCount('video')}}</div>
-                        <div class="stat-label">Vidéos</div>
+                        <div class="stat-number">{{$ctrl.userFiles.length}}</div>
+                        <div class="stat-label">Images</div>
                     </div>
                 </div>
                 
@@ -305,6 +286,16 @@
                         <div class="stat-label">Sécurité</div>
                     </div>
                 </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple-500/10 text-purple-400">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number">{{$ctrl.selectedFiles.length}}</div>
+                        <div class="stat-label">Sélectionnés</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Actions Principales -->
@@ -312,7 +303,7 @@
                 <button onclick="document.getElementById('fileUpload').click()"
                         class="action-btn primary">
                     <i class="fas fa-plus mr-2"></i>
-                    Ajouter des fichiers
+                    Ajouter des images
                 </button>
                 
                 <button ng-click="$ctrl.selectAllFiles()" 
@@ -342,24 +333,23 @@
             <!-- Zone de dépôt de fichiers -->
             <div class="file-drop-zone mb-6" 
                  ng-class="{'drag-over': $ctrl.isDragOver}"
-                 ng-drop="$ctrl.handleFileDrop($files)"
+                 ng-drop="true"
                  ng-drag-over="$ctrl.isDragOver = true"
                  ng-drag-leave="$ctrl.isDragOver = false">
                 <div class="drop-content">
                     <i class="fas fa-cloud-upload-alt text-4xl text-indigo-400 mb-3"></i>
-                    <h3 class="text-lg font-semibold text-white mb-2">Déposez vos fichiers ici</h3>
+                    <h3 class="text-lg font-semibold text-white mb-2">Déposez vos images ici</h3>
                     <p class="text-slate-400 text-sm">ou cliquez pour parcourir</p>
-                    <p class="text-xs text-slate-500 mt-2">Maximum 10MB par fichier</p>
+                    <p class="text-xs text-slate-500 mt-2">Images uniquement - Maximum 10MB par fichier</p>
                 </div>
                 <input type="file" id="fileUpload" multiple 
-                       ng-change="$ctrl.handleFileUpload($event)" class="hidden"
-                       accept="image/*,video/*">
+                       accept="image/*" class="hidden">
             </div>
 
             <!-- Galerie de fichiers -->
             <div class="gallery-container">
                 <div class="gallery-header">
-                    <h3 class="text-lg font-semibold text-white">Mes fichiers</h3>
+                    <h3 class="text-lg font-semibold text-white">Mes images</h3>
                     <div class="flex items-center space-x-4">
                         <div class="view-toggle">
                             <button ng-click="$ctrl.gridView = true" 
@@ -379,7 +369,6 @@
                                 <option value="name">Trier par nom</option>
                                 <option value="date">Trier par date</option>
                                 <option value="size">Trier par taille</option>
-                                <option value="type">Trier par type</option>
                             </select>
                         </div>
                     </div>
@@ -392,13 +381,9 @@
                          ng-class="{'selected': $ctrl.isSelected(file)}"
                          ng-click="$ctrl.toggleFileSelection(file)">
                         <div class="item-thumbnail">
-                            <img ng-src="{{file.preview}}" ng-if="file.type === 'image'" alt="{{file.name}}">
-                            <div class="video-thumbnail" ng-if="file.type === 'video'">
-                                <i class="fas fa-play text-white/80"></i>
-                                <div class="video-overlay"></div>
-                            </div>
-                            <div class="file-type-indicator" ng-class="file.type">
-                                <i class="fas {{file.type === 'image' ? 'fa-image' : 'fa-video'}}"></i>
+                            <img ng-src="{{file.preview}}" alt="{{file.name}}">
+                            <div class="file-type-indicator image">
+                                <i class="fas fa-image"></i>
                             </div>
                             <div class="selection-overlay" ng-if="$ctrl.isSelected(file)">
                                 <i class="fas fa-check-circle text-white"></i>
@@ -430,8 +415,8 @@
                          class="file-list-item"
                          ng-class="{'selected': $ctrl.isSelected(file)}"
                          ng-click="$ctrl.toggleFileSelection(file)">
-                        <div class="file-icon" ng-class="file.type">
-                            <i class="fas {{file.type === 'image' ? 'fa-image' : 'fa-video'}}"></i>
+                        <div class="file-icon image">
+                            <i class="fas fa-image"></i>
                         </div>
                         <div class="file-details">
                             <div class="file-name">{{file.name}}</div>
@@ -458,8 +443,12 @@
                     <div class="empty-icon">
                         <i class="fas fa-folder-open text-5xl text-slate-500"></i>
                     </div>
-                    <h3 class="empty-title">Aucun fichier</h3>
-                    <p class="empty-description">Commencez par ajouter vos premiers fichiers</p>
+                    <h3 class="empty-title">Aucune image</h3>
+                    <p class="empty-description">Commencez par ajouter vos premières images</p>
+                    <button onclick="document.getElementById('fileUpload').click()"
+                            class="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition">
+                        <i class="fas fa-plus mr-2"></i>Ajouter des images
+                    </button>
                 </div>
             </div>
         </div>
@@ -483,11 +472,10 @@
                             <img ng-src="{{$ctrl.user.profilePhoto}}" ng-if="$ctrl.user.profilePhoto" 
                                  class="profile-picture-large">
                             <div class="default-photo-large" ng-if="!$ctrl.user.profilePhoto">
-                                <i class="fas fa-user text-slate-400"></i>
+                                <i class="fas fa-user text-slate-400 text-3xl"></i>
                             </div>
                         </div>
-                        <input type="file" id="updateProfilePhoto" accept="image/*" 
-                               ng-change="$ctrl.updateProfilePhoto($event)" class="hidden">
+                        <input type="file" id="updateProfilePhoto" accept="image/*" class="hidden">
                         <button onclick="document.getElementById('updateProfilePhoto').click()"
                                 class="photo-update-btn">
                             <i class="fas fa-camera mr-2"></i>
@@ -531,7 +519,7 @@
                         <button ng-click="$ctrl.deleteAllFiles()" 
                                 class="danger-btn warning">
                             <i class="fas fa-trash mr-2"></i>
-                            Supprimer tous les fichiers
+                            Supprimer toutes les images
                         </button>
                         <button ng-click="$ctrl.deleteAccount()" 
                                 class="danger-btn destructive">
@@ -596,12 +584,75 @@
             }
         });
 
-        // Masquer l'écran de chargement
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loading').style.display = 'none';
-            }, 2000);
+        // Gestion des fichiers
+        document.getElementById('fileUpload')?.addEventListener('change', function(event) {
+            const scope = angular.element(document.body).scope();
+            if (scope && scope.$ctrl) {
+                scope.$ctrl.handleFileUpload(event);
+                scope.$apply();
+            }
         });
+
+        // Gestion de la photo de profil
+        document.getElementById('profilePhoto')?.addEventListener('change', function(event) {
+            const scope = angular.element(document.body).scope();
+            if (scope && scope.$ctrl) {
+                scope.$ctrl.handleProfilePhoto(event);
+                scope.$apply();
+            }
+        });
+
+        // Gestion de la mise à jour de la photo de profil
+        document.getElementById('updateProfilePhoto')?.addEventListener('change', function(event) {
+            const scope = angular.element(document.body).scope();
+            if (scope && scope.$ctrl) {
+                scope.$ctrl.updateProfilePhoto(event);
+                scope.$apply();
+            }
+        });
+
+        // Gestion du drag and drop
+        const dropZone = document.querySelector('.file-drop-zone');
+        if (dropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, function() {
+                    const scope = angular.element(document.body).scope();
+                    if (scope && scope.$ctrl) {
+                        scope.$ctrl.isDragOver = true;
+                        scope.$apply();
+                    }
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, function() {
+                    const scope = angular.element(document.body).scope();
+                    if (scope && scope.$ctrl) {
+                        scope.$ctrl.isDragOver = false;
+                        scope.$apply();
+                    }
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                const scope = angular.element(document.body).scope();
+                if (scope && scope.$ctrl) {
+                    scope.$ctrl.handleFileDrop(files);
+                    scope.$apply();
+                }
+            }, false);
+        }
 
         // Service Worker pour PWA
         if ('serviceWorker' in navigator) {
