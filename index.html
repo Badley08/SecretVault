@@ -4,26 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0066ff">
-  <meta name="description" content="SecretVault : Stockez vos photos en toute sécurité, localement ou dans le cloud, avec une expérience ultra-rapide et privée.">
-  <meta name="keywords" content="SecretVault, PWA, photos, galerie, cloud, stockage local, sécurisé, firebase, confidentialité">
+  <meta name="description" content="SecretVault : Galerie de photos sécurisée avec stockage local et cloud.">
+  <meta name="keywords" content="PWA, galerie photos, sécurisé, cloud, offline">
   <meta name="author" content="SecretVault Team">
-  <meta property="og:title" content="SecretVault – Galerie sécurisée">
-  <meta property="og:description" content="Stockez vos photos en toute sécurité, localement ou dans le cloud.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SecretVault">
   
-  <title>SecretVault – Galerie sécurisée</title>
+  <title>SecretVault - Galerie Sécurisée</title>
   
-  <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066ff' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>S</text></svg>">
+  <link rel="icon" type="image/png" href="secretvault.png">
+  <link rel="apple-touch-icon" href="secretvault.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
-  
-  <script src="https://kit.fontawesome.com/a2e0b4f3d4.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-
   <div class="container">
-
+    <!-- Navigation Menu -->
     <nav class="hamburger-menu">
-      <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
       <div class="menu-links" id="menuLinks">
         <a href="https://badley08.github.io/Karlito" target="_blank" rel="noopener noreferrer">
           <i class="fas fa-briefcase"></i> Mon Portfolio
@@ -33,34 +35,47 @@
         </a>
       </div>
     </nav>
-    
+
+    <!-- Authentication Modal -->
     <div class="modal" id="authModal">
       <div class="modal-content">
-        <h2><i class="fas fa-lock"></i> SecretVault</h2>
+        <img src="secretvault.png" alt="SecretVault Logo" class="logo-modal">
+        <h2>SecretVault</h2>
+        <p class="subtitle">Galerie Sécurisée PWA</p>
         
+        <!-- Quick Local Mode -->
         <div class="storage-choice-prompt">
-            <p>💨 Accès rapide:</p>
-            <button type="button" class="choice-btn selected" data-storage="local" id="btnLocalMode">
-              <i class="fas fa-mobile-alt"></i> Mode Local
-            </button>
+          <p>💨 Accès Rapide:</p>
+          <button type="button" class="choice-btn selected" data-storage="local" id="btnLocalMode">
+            <i class="fas fa-mobile-alt"></i> Mode Local
+          </button>
         </div>
-        <p>── ou ──</p>
 
+        <div class="separator">
+          <span>ou</span>
+        </div>
+
+        <!-- Google Sign In -->
         <div class="social-login">
-          <button id="btnGoogle" class="btn-social" title="Google"><i class="fab fa-google"></i></button>
+          <button id="btnGoogle" class="btn-social" title="Connexion Google">
+            <i class="fab fa-google"></i> Google
+          </button>
         </div>
 
-        <p>── ou utiliser les identifiants ──</p>
+        <div class="separator">
+          <span>ou</span>
+        </div>
 
+        <!-- Email/Password Form -->
         <form id="authForm">
-          <input type="text" id="username" placeholder="Nom d'utilisateur (pour le Cloud)" />
-          <input type="email" id="email" placeholder="Email (pour le Cloud)" required />
-          <input type="password" id="password" placeholder="Mot de passe" required />
+          <input type="text" id="username" placeholder="Nom d'utilisateur" />
+          <input type="email" id="email" placeholder="Email" required />
+          <input type="password" id="password" placeholder="Mot de passe (6+ caractères)" required />
 
           <div class="storage-choice">
             <p>☁️ Stockage Cloud:</p>
             <button type="button" class="choice-btn" data-storage="cloud" id="btnCloudMode">
-              <i class="fas fa-cloud-upload-alt"></i> Cloud (sauvegarde)
+              <i class="fas fa-cloud-upload-alt"></i> Cloud
             </button>
           </div>
 
@@ -72,53 +87,68 @@
         <div class="loader" id="authLoader"></div>
       </div>
     </div>
-    
+
+    <!-- Main Header -->
     <header>
-      <div class="app-logo"><i class="fas fa-vault"></i> SecretVault</div>
+      <div class="header-left">
+        <img src="secretvault.png" alt="SecretVault" class="app-logo">
+        <h1>SecretVault</h1>
+      </div>
       <div class="header-actions">
-          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%230066ff'/%3E%3Ctext x='50' y='55' font-size='60' font-weight='bold' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E" alt="Photo de profil" id="profilePicture" class="profile-picture">
-          <button id="btnLogout" class="btn-logout" style="display: none;">
-            <i class="fas fa-sign-out-alt"></i> Déconnexion
-          </button>
+        <img src="secretvault.png" alt="Profile" id="profilePicture" class="profile-picture">
+        <button id="btnLogout" class="btn-logout" style="display: none;">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
       </div>
     </header>
 
+    <!-- Welcome Message -->
     <h2 id="welcomeMessage" class="welcome-message"></h2>
 
+    <!-- Gallery Section -->
     <section id="gallerySection" class="hidden">
       <div class="storage-badge" id="storageBadge"></div>
-      
+
+      <!-- Action Buttons -->
       <div class="actions">
         <label for="inputProfilePic" class="btn-action">
           <i class="fas fa-image"></i> Photo Profil
         </label>
         <input type="file" id="inputProfilePic" accept="image/*" class="hidden" />
-        
+
         <button id="btnAddPhotos" class="btn-action">
-          <i class="fas fa-plus-circle"></i> Ajouter photos
+          <i class="fas fa-plus-circle"></i> Ajouter Photos
         </button>
+
         <button id="btnClearAll" class="btn-action">
-          <i class="fas fa-trash-alt"></i> Tout supprimer
+          <i class="fas fa-trash-alt"></i> Tout Supprimer
         </button>
       </div>
+
       <input type="file" id="inputPhotos" accept="image/*" multiple class="hidden" />
 
+      <!-- Photo Counter -->
       <div class="photo-counter" id="photoCounter"></div>
+
+      <!-- Gallery Grid -->
       <div class="gallery" id="gallery"></div>
+
+      <!-- Empty Gallery Message -->
       <p id="emptyGalleryMsg" class="empty-gallery-msg">
         <i class="fas fa-inbox"></i> Votre galerie est vide. Ajoutez des photos !
       </p>
     </section>
 
+    <!-- Footer -->
     <footer>
       <p>&copy; 2025 SecretVault - PWA Sécurisée</p>
       <div class="footer-credits">
-        Développé par Badley | <a href="https://badley08.github.io/Karlito" target="_blank" rel="noopener noreferrer" style="color: #0066ff; text-decoration: none;">Portfolio</a>
+        Développé par Badley | <a href="https://badley08.github.io/Karlito" target="_blank" rel="noopener noreferrer">Portfolio</a>
       </div>
     </footer>
-
   </div>
 
-  <script type="module" src="script.js"></script>
+  <!-- Firebase SDK (via CDN) -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
