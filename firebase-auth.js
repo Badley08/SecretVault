@@ -10,22 +10,30 @@ const firebaseConfig = {
     measurementId: "G-WTZ5NMZPRW"
 };
 
-// Initialisation Firebase
-try {
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-    
-    console.log('Firebase initialisé avec succès');
-    
-    // Configuration CORS pour Firebase
-    const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-    };
-    
-} catch (error) {
-    console.error('Erreur Firebase:', error);
+// Initialisation Firebase avec vérification
+if (typeof firebase !== 'undefined') {
+    try {
+        // Vérifier si Firebase est déjà initialisé
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase initialisé avec succès');
+        } else {
+            console.log('✅ Firebase déjà initialisé');
+        }
+        
+        // Vérifier que tous les services sont disponibles
+        if (firebase.auth && firebase.firestore && firebase.storage) {
+            console.log('✅ Tous les services Firebase sont disponibles');
+            console.log('   - Auth:', typeof firebase.auth());
+            console.log('   - Firestore:', typeof firebase.firestore());
+            console.log('   - Storage:', typeof firebase.storage());
+        } else {
+            console.error('❌ Certains services Firebase ne sont pas disponibles');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'initialisation de Firebase:', error);
+    }
+} else {
+    console.error('❌ Firebase SDK n\'est pas chargé. Vérifiez les scripts CDN.');
 }
