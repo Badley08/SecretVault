@@ -8,8 +8,8 @@ angular.module('secretVaultApp', [])
 .controller('MainController', function($scope, $timeout) {
     const ctrl = this;
     
-    // Firebase références globales
-    let auth, db, storage;
+    // Supabase client
+    let supabase;
     
     // État de l'application
     ctrl.user = null;
@@ -30,17 +30,18 @@ angular.module('secretVaultApp', [])
     
     // Initialisation
     ctrl.init = function() {
-        console.log('Initialisation de SecretVault...');
+        console.log('🚀 Initialisation de SecretVault avec Supabase...');
         
-        // Attendre que Firebase soit chargé
-        const waitForFirebase = setInterval(() => {
-            if (typeof firebase !== 'undefined') {
-                clearInterval(waitForFirebase);
-                ctrl.initializeFirebase();
+        // Attendre que Supabase soit chargé
+        const waitForSupabase = setInterval(() => {
+            if (window.supabaseClient) {
+                clearInterval(waitForSupabase);
+                supabase = window.supabaseClient;
+                ctrl.checkSession();
             }
         }, 100);
         
-        // Masquer le loader après l'initialisation
+        // Masquer le loader
         $timeout(function() {
             const loadingElement = document.getElementById('loading');
             if (loadingElement) {
@@ -49,36 +50,16 @@ angular.module('secretVaultApp', [])
         }, 1500);
     };
     
-    // Initialiser Firebase
-    ctrl.initializeFirebase = function() {
-        try {
-            auth = firebase.auth();
-            db = firebase.firestore();
-            storage = firebase.storage();
-            
-            console.log('Firebase initialisé avec succès');
-            
-            // Observer l'état d'authentification
-            auth.onAuthStateChanged((firebaseUser) => {
-                if (firebaseUser) {
-                    ctrl.user = {
-                        id: firebaseUser.uid,
-                        username: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-                        email: firebaseUser.email,
-                        profilePhoto: firebaseUser.photoURL || null,
-                        storageType: 'cloud',
-                        createdAt: new Date().toISOString()
-                    };
-                    ctrl.loadUserFiles();
-                    $scope.$apply();
-                }
-            });
-        } catch (error) {
-            console.error('Erreur initialisation Firebase:', error);
+    // Vérifier la session existante
+    ctrl.checkSession = async function() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            console.log('✅ Session trouvée:', session.user.email);
+            ctrl.handleAuthSuccess(session.user);
         }
     };
     
-    // Gestion de la photo de profil lors de l'inscription
+    // Gestion de la photo de profil
     ctrl.handleProfilePhoto = function(event) {
         const file = event.target.files[0];
         if (file) {
@@ -97,14 +78,13 @@ angular.module('secretVaultApp', [])
                 ctrl.profilePreview = e.target.result;
                 ctrl.registerData.profilePhoto = e.target.result;
                 $scope.$apply();
-                console.log('Photo de profil chargée');
             };
             reader.readAsDataURL(file);
         }
     };
     
     // Connexion
-    ctrl.login = function() {
+    ctrl.login = async function() {
         if (!ctrl.loginData.username || !ctrl.loginData.password) {
             ctrl.showNotification('Veuillez remplir tous les champs', 'warning');
             return;
@@ -114,34 +94,28 @@ angular.module('secretVaultApp', [])
         
         const email = ctrl.loginData.username.includes('@') 
             ? ctrl.loginData.username 
-            : ctrl.loginData.username + '@secretvault.local';
+            : ctrl.loginData.username + '@secretvault.app';
         
-        auth.signInWithEmailAndPassword(email, ctrl.loginData.password)
-            .then((userCredential) => {
-                ctrl.user = {
-                    id: userCredential.user.uid,
-                    username: userCredential.user.displayName || ctrl.loginData.username,
-                    email: userCredential.user.email,
-                    profilePhoto: userCredential.user.photoURL || null,
-                    storageType: 'cloud',
-                    createdAt: new Date().toISOString()
-                };
-                
-                ctrl.loadUserFiles();
-                ctrl.hideLoading();
-                ctrl.showNotification('Connexion réussie!', 'success');
-                $scope.$apply();
-            })
-            .catch((error) => {
-                ctrl.hideLoading();
-                console.error('Erreur connexion:', error);
-                ctrl.showNotification('Identifiants incorrects', 'error');
-                $scope.$apply();
-            });
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: ctrl.loginData.password
+        });
+        
+        if (error) {
+            console.error('❌ Erreur connexion:', error);
+            ctrl.hideLoading();
+            ctrl.showNotification('Identifiants incorrects', 'error');
+            $scope.$apply();
+        } else {
+            console.log('✅ Connexion réussie');
+            ctrl.handleAuthSuccess(data.user);
+            ctrl.hideLoading();
+            ctrl.showNotification('Connexion réussie!', 'success');
+        }
     };
     
     // Inscription
-    ctrl.register = function() {
+    ctrl.register = async function() {
         if (!ctrl.registerData.username || !ctrl.registerData.password) {
             ctrl.showNotification('Veuillez remplir tous les champs', 'warning');
             return;
@@ -156,69 +130,76 @@ angular.module('secretVaultApp', [])
         
         const email = ctrl.registerData.username.includes('@') 
             ? ctrl.registerData.username 
-            : ctrl.registerData.username + '@secretvault.local';
+            : ctrl.registerData.username + '@secretvault.app';
         
-        auth.createUserWithEmailAndPassword(email, ctrl.registerData.password)
-            .then((userCredential) => {
-                // Mettre à jour le profil
-                return userCredential.user.updateProfile({
-                    displayName: ctrl.registerData.username,
-                    photoURL: ctrl.registerData.profilePhoto || null
-                }).then(() => userCredential);
-            })
-            .then((userCredential) => {
-                // Créer le document utilisateur dans Firestore
-                return db.collection('users').doc(userCredential.user.uid).set({
-                    username: ctrl.registerData.username,
-                    email: email,
-                    profilePhoto: ctrl.registerData.profilePhoto || null,
-                    storageType: ctrl.registerData.storageType || 'cloud',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => userCredential);
-            })
-            .then((userCredential) => {
-                ctrl.user = {
-                    id: userCredential.user.uid,
-                    username: ctrl.registerData.username,
-                    profilePhoto: ctrl.registerData.profilePhoto || null,
-                    storageType: ctrl.registerData.storageType || 'cloud',
-                    createdAt: new Date().toISOString()
-                };
-                
-                ctrl.showRegister = false;
-                ctrl.hideLoading();
-                ctrl.showNotification('Compte créé avec succès!', 'success');
-                $scope.$apply();
-            })
-            .catch((error) => {
-                ctrl.hideLoading();
-                console.error('Erreur inscription:', error);
-                
-                let errorMessage = 'Erreur lors de l\'inscription';
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = 'Ce nom d\'utilisateur est déjà utilisé';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'Mot de passe trop faible';
-                }
-                
-                ctrl.showNotification(errorMessage, 'error');
-                $scope.$apply();
-            });
+        // Créer le compte
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: ctrl.registerData.password
+        });
+        
+        if (authError) {
+            console.error('❌ Erreur inscription:', authError);
+            ctrl.hideLoading();
+            ctrl.showNotification('Erreur: ' + authError.message, 'error');
+            $scope.$apply();
+            return;
+        }
+        
+        // Créer le profil utilisateur
+        const { error: profileError } = await supabase
+            .from('users')
+            .insert([{
+                id: authData.user.id,
+                username: ctrl.registerData.username,
+                email: email,
+                profile_photo: ctrl.registerData.profilePhoto || null,
+                storage_type: ctrl.registerData.storageType || 'cloud'
+            }]);
+        
+        if (profileError) {
+            console.error('❌ Erreur profil:', profileError);
+        }
+        
+        ctrl.handleAuthSuccess(authData.user);
+        ctrl.showRegister = false;
+        ctrl.hideLoading();
+        ctrl.showNotification('Compte créé avec succès!', 'success');
+    };
+    
+    // Gérer le succès d'authentification
+    ctrl.handleAuthSuccess = async function(user) {
+        // Récupérer les infos du profil
+        const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+        
+        ctrl.user = {
+            id: user.id,
+            username: profile?.username || user.email.split('@')[0],
+            email: user.email,
+            profilePhoto: profile?.profile_photo || null,
+            storageType: profile?.storage_type || 'cloud'
+        };
+        
+        ctrl.loadUserFiles();
+        $scope.$apply();
     };
     
     // Déconnexion
-    ctrl.logout = function() {
-        auth.signOut().then(() => {
-            ctrl.user = null;
-            ctrl.userFiles = [];
-            ctrl.selectedFiles = [];
-            ctrl.loginData = {};
-            ctrl.showNotification('Déconnexion réussie', 'info');
-            $scope.$apply();
-        });
+    ctrl.logout = async function() {
+        await supabase.auth.signOut();
+        ctrl.user = null;
+        ctrl.userFiles = [];
+        ctrl.selectedFiles = [];
+        ctrl.loginData = {};
+        ctrl.showNotification('Déconnexion réussie', 'info');
+        $scope.$apply();
     };
     
-    // Gestion des fichiers - UNIQUEMENT DES IMAGES
+    // Gestion des fichiers
     ctrl.handleFileUpload = function(event) {
         const files = event.target.files;
         ctrl.processFiles(Array.from(files));
@@ -230,145 +211,129 @@ angular.module('secretVaultApp', [])
         ctrl.isDragOver = false;
     };
     
-    ctrl.processFiles = function(files) {
+    ctrl.processFiles = async function(files) {
         if (!files || files.length === 0) return;
         
         ctrl.showLoading();
-        let processedCount = 0;
-        let totalFiles = files.length;
-        let validFiles = 0;
         
         for (let file of files) {
             // Vérifier que c'est une image
             if (!file.type.startsWith('image/')) {
                 ctrl.showNotification(`"${file.name}" n'est pas une image valide`, 'error');
-                processedCount++;
                 continue;
             }
             
             // Vérifier la taille
             if (file.size > 10 * 1024 * 1024) {
                 ctrl.showNotification(`"${file.name}" dépasse 10MB`, 'error');
-                processedCount++;
                 continue;
             }
             
-            validFiles++;
-            
-            // Upload vers Firebase Storage
-            ctrl.uploadToFirebase(file).then(() => {
-                processedCount++;
-                if (processedCount === totalFiles) {
-                    ctrl.hideLoading();
-                    if (validFiles > 0) {
-                        ctrl.showNotification(`${validFiles} image(s) ajoutée(s)`, 'success');
-                    }
-                }
-            }).catch(error => {
-                console.error('Erreur upload:', error);
-                processedCount++;
-                if (processedCount === totalFiles) {
-                    ctrl.hideLoading();
-                }
-            });
+            await ctrl.uploadToSupabase(file);
         }
         
-        if (validFiles === 0) {
-            ctrl.hideLoading();
-        }
+        ctrl.hideLoading();
     };
     
-    // Upload vers Firebase
-    ctrl.uploadToFirebase = function(file) {
-        return new Promise((resolve, reject) => {
-            if (!ctrl.user) {
-                reject('User not logged in');
-                return;
-            }
-            
-            const timestamp = Date.now();
-            const fileName = `${timestamp}_${file.name}`;
-            const storageRef = storage.ref(`users/${ctrl.user.id}/images/${fileName}`);
-            
-            // Upload le fichier
-            const uploadTask = storageRef.put(file);
-            
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    // Progress
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload progress:', progress + '%');
-                },
-                (error) => {
-                    // Error
-                    console.error('Upload error:', error);
-                    reject(error);
-                },
-                () => {
-                    // Complete
-                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                        // Sauvegarder les métadonnées dans Firestore
-                        db.collection('users').doc(ctrl.user.id).collection('files').add({
-                            name: file.name,
-                            size: (file.size / (1024 * 1024)).toFixed(2),
-                            type: 'image',
-                            preview: downloadURL,
-                            storagePath: `users/${ctrl.user.id}/images/${fileName}`,
-                            date: firebase.firestore.FieldValue.serverTimestamp()
-                        }).then((docRef) => {
-                            // Ajouter à la galerie locale
-                            const fileObj = {
-                                id: docRef.id,
-                                name: file.name,
-                                size: (file.size / (1024 * 1024)).toFixed(2),
-                                type: 'image',
-                                preview: downloadURL,
-                                date: new Date().toISOString()
-                            };
-                            
-                            ctrl.userFiles.unshift(fileObj);
-                            $scope.$apply();
-                            resolve();
-                        });
-                    });
-                }
-            );
-        });
-    };
-    
-    // Charger les fichiers de l'utilisateur
-    ctrl.loadUserFiles = function() {
+    // Upload vers Supabase Storage
+    ctrl.uploadToSupabase = async function(file) {
         if (!ctrl.user) return;
         
+        console.log('📤 Upload:', file.name);
+        
+        const timestamp = Date.now();
+        const fileName = `${ctrl.user.id}/${timestamp}_${file.name}`;
+        
+        // Upload vers Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('user-images')
+            .upload(fileName, file);
+        
+        if (uploadError) {
+            console.error('❌ Erreur upload:', uploadError);
+            ctrl.showNotification('Erreur upload: ' + uploadError.message, 'error');
+            return;
+        }
+        
+        console.log('✅ Fichier uploadé:', uploadData.path);
+        
+        // Obtenir l'URL publique
+        const { data: urlData } = supabase.storage
+            .from('user-images')
+            .getPublicUrl(fileName);
+        
+        console.log('🔗 URL:', urlData.publicUrl);
+        
+        // Sauvegarder dans la base de données
+        const { data: dbData, error: dbError } = await supabase
+            .from('files')
+            .insert([{
+                user_id: ctrl.user.id,
+                name: file.name,
+                size: (file.size / (1024 * 1024)).toFixed(2),
+                type: 'image',
+                preview_url: urlData.publicUrl,
+                storage_path: fileName
+            }])
+            .select()
+            .single();
+        
+        if (dbError) {
+            console.error('❌ Erreur DB:', dbError);
+            ctrl.showNotification('Erreur sauvegarde: ' + dbError.message, 'error');
+            return;
+        }
+        
+        console.log('💾 Sauvegardé en DB:', dbData.id);
+        
+        // Ajouter à la galerie
+        ctrl.userFiles.unshift({
+            id: dbData.id,
+            name: dbData.name,
+            size: dbData.size,
+            type: dbData.type,
+            preview: dbData.preview_url,
+            storagePath: dbData.storage_path,
+            date: dbData.created_at
+        });
+        
+        ctrl.showNotification('Image ajoutée avec succès!', 'success');
+        $scope.$apply();
+    };
+    
+    // Charger les fichiers
+    ctrl.loadUserFiles = async function() {
+        if (!ctrl.user) return;
+        
+        console.log('📥 Chargement des fichiers...');
         ctrl.showLoading();
         
-        db.collection('users').doc(ctrl.user.id).collection('files')
-            .orderBy('date', 'desc')
-            .get()
-            .then((querySnapshot) => {
-                ctrl.userFiles = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    ctrl.userFiles.push({
-                        id: doc.id,
-                        name: data.name,
-                        size: data.size,
-                        type: data.type,
-                        preview: data.preview,
-                        storagePath: data.storagePath,
-                        date: data.date ? data.date.toDate().toISOString() : new Date().toISOString()
-                    });
-                });
-                
-                ctrl.hideLoading();
-                console.log('Fichiers chargés:', ctrl.userFiles.length);
-                $scope.$apply();
-            })
-            .catch((error) => {
-                console.error('Erreur chargement fichiers:', error);
-                ctrl.hideLoading();
-                $scope.$apply();
-            });
+        const { data, error } = await supabase
+            .from('files')
+            .select('*')
+            .eq('user_id', ctrl.user.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('❌ Erreur chargement:', error);
+            ctrl.hideLoading();
+            $scope.$apply();
+            return;
+        }
+        
+        ctrl.userFiles = data.map(file => ({
+            id: file.id,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            preview: file.preview_url,
+            storagePath: file.storage_path,
+            date: file.created_at
+        }));
+        
+        console.log('✅ Fichiers chargés:', ctrl.userFiles.length);
+        ctrl.hideLoading();
+        $scope.$apply();
     };
     
     // Sélection de fichiers
@@ -395,16 +360,14 @@ angular.module('secretVaultApp', [])
     
     // Téléchargement
     ctrl.downloadFile = function(file) {
-        if (file.preview) {
-            const link = document.createElement('a');
-            link.href = file.preview;
-            link.download = file.name;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            ctrl.showNotification(`"${file.name}" téléchargé`, 'success');
-        }
+        const link = document.createElement('a');
+        link.href = file.preview;
+        link.download = file.name;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        ctrl.showNotification(`"${file.name}" téléchargé`, 'success');
     };
     
     ctrl.downloadSelected = function() {
@@ -421,105 +384,92 @@ angular.module('secretVaultApp', [])
     };
     
     // Suppression
-    ctrl.deleteFile = function(file) {
-        if (confirm(`Supprimer "${file.name}" ?`)) {
-            ctrl.showLoading();
-            
-            // Supprimer de Storage
-            const storageRef = storage.ref(file.storagePath);
-            storageRef.delete()
-                .then(() => {
-                    // Supprimer de Firestore
-                    return db.collection('users').doc(ctrl.user.id).collection('files').doc(file.id).delete();
-                })
-                .then(() => {
-                    // Supprimer de l'interface
-                    const index = ctrl.userFiles.findIndex(f => f.id === file.id);
-                    if (index > -1) {
-                        ctrl.userFiles.splice(index, 1);
-                    }
-                    ctrl.removeFromSelection(file);
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Fichier supprimé', 'info');
-                    $scope.$apply();
-                })
-                .catch((error) => {
-                    console.error('Erreur suppression:', error);
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Erreur lors de la suppression', 'error');
-                    $scope.$apply();
-                });
+    ctrl.deleteFile = async function(file) {
+        if (!confirm(`Supprimer "${file.name}" ?`)) return;
+        
+        ctrl.showLoading();
+        
+        // Supprimer de Storage
+        const { error: storageError } = await supabase.storage
+            .from('user-images')
+            .remove([file.storagePath]);
+        
+        if (storageError) {
+            console.error('❌ Erreur suppression storage:', storageError);
         }
+        
+        // Supprimer de la DB
+        const { error: dbError } = await supabase
+            .from('files')
+            .delete()
+            .eq('id', file.id);
+        
+        if (dbError) {
+            console.error('❌ Erreur suppression DB:', dbError);
+            ctrl.hideLoading();
+            ctrl.showNotification('Erreur suppression', 'error');
+            $scope.$apply();
+            return;
+        }
+        
+        // Supprimer de l'interface
+        const index = ctrl.userFiles.findIndex(f => f.id === file.id);
+        if (index > -1) {
+            ctrl.userFiles.splice(index, 1);
+        }
+        ctrl.removeFromSelection(file);
+        
+        ctrl.hideLoading();
+        ctrl.showNotification('Fichier supprimé', 'info');
+        $scope.$apply();
     };
     
-    ctrl.deleteSelected = function() {
+    ctrl.deleteSelected = async function() {
         if (ctrl.selectedFiles.length === 0) {
             ctrl.showNotification('Aucun fichier sélectionné', 'warning');
             return;
         }
         
-        if (confirm(`Supprimer ${ctrl.selectedFiles.length} fichier(s) sélectionné(s) ?`)) {
-            ctrl.showLoading();
-            
-            const deletePromises = ctrl.selectedFiles.map(file => {
-                const storageRef = storage.ref(file.storagePath);
-                return storageRef.delete()
-                    .then(() => {
-                        return db.collection('users').doc(ctrl.user.id).collection('files').doc(file.id).delete();
-                    });
-            });
-            
-            Promise.all(deletePromises)
-                .then(() => {
-                    ctrl.userFiles = ctrl.userFiles.filter(file => 
-                        !ctrl.selectedFiles.some(selected => selected.id === file.id)
-                    );
-                    ctrl.selectedFiles = [];
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Fichiers supprimés', 'info');
-                    $scope.$apply();
-                })
-                .catch((error) => {
-                    console.error('Erreur suppression multiple:', error);
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Erreur lors de la suppression', 'error');
-                    $scope.$apply();
-                });
+        if (!confirm(`Supprimer ${ctrl.selectedFiles.length} fichier(s) ?`)) return;
+        
+        ctrl.showLoading();
+        
+        for (let file of ctrl.selectedFiles) {
+            await supabase.storage.from('user-images').remove([file.storagePath]);
+            await supabase.from('files').delete().eq('id', file.id);
         }
+        
+        ctrl.userFiles = ctrl.userFiles.filter(file => 
+            !ctrl.selectedFiles.some(selected => selected.id === file.id)
+        );
+        ctrl.selectedFiles = [];
+        
+        ctrl.hideLoading();
+        ctrl.showNotification('Fichiers supprimés', 'info');
+        $scope.$apply();
     };
     
-    ctrl.deleteAllFiles = function() {
+    ctrl.deleteAllFiles = async function() {
         if (ctrl.userFiles.length === 0) {
             ctrl.showNotification('Aucun fichier à supprimer', 'warning');
             return;
         }
         
-        if (confirm('Supprimer tous les fichiers ? Cette action est irréversible.')) {
-            ctrl.showLoading();
-            
-            const deletePromises = ctrl.userFiles.map(file => {
-                const storageRef = storage.ref(file.storagePath);
-                return storageRef.delete()
-                    .then(() => {
-                        return db.collection('users').doc(ctrl.user.id).collection('files').doc(file.id).delete();
-                    });
-            });
-            
-            Promise.all(deletePromises)
-                .then(() => {
-                    ctrl.userFiles = [];
-                    ctrl.selectedFiles = [];
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Tous les fichiers ont été supprimés', 'info');
-                    $scope.$apply();
-                })
-                .catch((error) => {
-                    console.error('Erreur suppression totale:', error);
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Erreur lors de la suppression', 'error');
-                    $scope.$apply();
-                });
+        if (!confirm('Supprimer tous les fichiers ? Cette action est irréversible.')) return;
+        
+        ctrl.showLoading();
+        
+        for (let file of ctrl.userFiles) {
+            await supabase.storage.from('user-images').remove([file.storagePath]);
+            await supabase.from('files').delete().eq('id', file.id);
         }
+        
+        ctrl.userFiles = [];
+        ctrl.selectedFiles = [];
+        
+        ctrl.hideLoading();
+        ctrl.showNotification('Tous les fichiers ont été supprimés', 'info');
+        $scope.$apply();
     };
     
     ctrl.removeFromSelection = function(file) {
@@ -530,7 +480,7 @@ angular.module('secretVaultApp', [])
     };
     
     // Gestion du profil
-    ctrl.updateProfilePhoto = function(event) {
+    ctrl.updateProfilePhoto = async function(event) {
         const file = event.target.files[0];
         if (!file) return;
         
@@ -546,68 +496,63 @@ angular.module('secretVaultApp', [])
         
         ctrl.showLoading();
         
-        const storageRef = storage.ref(`users/${ctrl.user.id}/profile/avatar`);
-        storageRef.put(file)
-            .then(snapshot => snapshot.ref.getDownloadURL())
-            .then(downloadURL => {
-                return auth.currentUser.updateProfile({
-                    photoURL: downloadURL
-                }).then(() => downloadURL);
-            })
-            .then(downloadURL => {
-                return db.collection('users').doc(ctrl.user.id).update({
-                    profilePhoto: downloadURL
-                }).then(() => downloadURL);
-            })
-            .then(downloadURL => {
-                ctrl.user.profilePhoto = downloadURL;
-                ctrl.hideLoading();
-                ctrl.showNotification('Photo de profil mise à jour', 'success');
-                $scope.$apply();
-            })
-            .catch(error => {
-                console.error('Erreur update photo:', error);
-                ctrl.hideLoading();
-                ctrl.showNotification('Erreur lors de la mise à jour', 'error');
-                $scope.$apply();
-            });
-    };
-    
-    ctrl.saveProfileSettings = function() {
-        db.collection('users').doc(ctrl.user.id).update({
-            storageType: ctrl.user.storageType
-        }).then(() => {
-            ctrl.showProfileSettings = false;
-            ctrl.showNotification('Paramètres sauvegardés', 'success');
+        const fileName = `${ctrl.user.id}/profile_${Date.now()}.jpg`;
+        
+        const { data, error } = await supabase.storage
+            .from('user-images')
+            .upload(fileName, file);
+        
+        if (error) {
+            console.error('❌ Erreur upload profil:', error);
+            ctrl.hideLoading();
+            ctrl.showNotification('Erreur upload', 'error');
             $scope.$apply();
-        });
+            return;
+        }
+        
+        const { data: urlData } = supabase.storage
+            .from('user-images')
+            .getPublicUrl(fileName);
+        
+        await supabase
+            .from('users')
+            .update({ profile_photo: urlData.publicUrl })
+            .eq('id', ctrl.user.id);
+        
+        ctrl.user.profilePhoto = urlData.publicUrl;
+        ctrl.hideLoading();
+        ctrl.showNotification('Photo de profil mise à jour', 'success');
+        $scope.$apply();
     };
     
-    ctrl.deleteAccount = function() {
-        if (confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Toutes vos données seront perdues.')) {
-            ctrl.showLoading();
-            
-            // Supprimer tous les fichiers
-            ctrl.deleteAllFiles();
-            
-            // Supprimer le document utilisateur
-            db.collection('users').doc(ctrl.user.id).delete()
-                .then(() => {
-                    // Supprimer l'utilisateur Firebase Auth
-                    return auth.currentUser.delete();
-                })
-                .then(() => {
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Compte supprimé avec succès', 'info');
-                    ctrl.logout();
-                })
-                .catch(error => {
-                    console.error('Erreur suppression compte:', error);
-                    ctrl.hideLoading();
-                    ctrl.showNotification('Erreur lors de la suppression du compte', 'error');
-                    $scope.$apply();
-                });
-        }
+    ctrl.saveProfileSettings = async function() {
+        await supabase
+            .from('users')
+            .update({ storage_type: ctrl.user.storageType })
+            .eq('id', ctrl.user.id);
+        
+        ctrl.showProfileSettings = false;
+        ctrl.showNotification('Paramètres sauvegardés', 'success');
+        $scope.$apply();
+    };
+    
+    ctrl.deleteAccount = async function() {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer votre compte ?')) return;
+        
+        ctrl.showLoading();
+        
+        // Supprimer tous les fichiers
+        await ctrl.deleteAllFiles();
+        
+        // Supprimer le profil
+        await supabase.from('users').delete().eq('id', ctrl.user.id);
+        
+        // Supprimer le compte Auth
+        await supabase.auth.admin.deleteUser(ctrl.user.id);
+        
+        ctrl.hideLoading();
+        ctrl.showNotification('Compte supprimé', 'info');
+        ctrl.logout();
     };
     
     // Utilitaires
