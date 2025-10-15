@@ -228,9 +228,9 @@
                         <div>
                             <h2 class="text-xl font-bold text-white">Bonjour, {{$ctrl.user.username}}! 👋</h2>
                             <div class="flex items-center space-x-2 mt-1">
-                                <span class="storage-badge" ng-class="$ctrl.user.storageType === 'cloud' ? 'cloud' : 'local'">
-                                    <i class="fas {{$ctrl.user.storageType === 'cloud' ? 'fa-cloud' : 'fa-database'}} mr-1"></i>
-                                    {{$ctrl.user.storageType === 'cloud' ? 'Stockage Cloud' : 'Stockage Local'}}
+                                <span class="storage-badge cloud">
+                                    <i class="fas fa-cloud mr-1"></i>
+                                    Stockage Cloud
                                 </span>
                                 <span class="text-slate-400 text-sm">
                                     • {{$ctrl.userFiles.length}} image(s)
@@ -282,7 +282,7 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <div class="stat-info">
-                        <div class="stat-number">{{$ctrl.user.storageType === 'cloud' ? 'Cloud' : 'Local'}}</div>
+                        <div class="stat-number">Cloud</div>
                         <div class="stat-label">Sécurité</div>
                     </div>
                 </div>
@@ -333,9 +333,7 @@
             <!-- Zone de dépôt de fichiers -->
             <div class="file-drop-zone mb-6" 
                  ng-class="{'drag-over': $ctrl.isDragOver}"
-                 ng-drop="true"
-                 ng-drag-over="$ctrl.isDragOver = true"
-                 ng-drag-leave="$ctrl.isDragOver = false">
+                 onclick="document.getElementById('fileUpload').click()">
                 <div class="drop-content">
                     <i class="fas fa-cloud-upload-alt text-4xl text-indigo-400 mb-3"></i>
                     <h3 class="text-lg font-semibold text-white mb-2">Déposez vos images ici</h3>
@@ -484,35 +482,6 @@
                     </div>
                 </div>
                 
-                <div class="settings-section">
-                    <h4 class="section-title">Type de stockage</h4>
-                    <div class="storage-settings">
-                        <div class="storage-option large"
-                             ng-class="{'storage-selected': $ctrl.user.storageType === 'cloud'}"
-                             ng-click="$ctrl.user.storageType = 'cloud'">
-                            <div class="storage-icon">
-                                <i class="fas fa-cloud"></i>
-                            </div>
-                            <div class="storage-info">
-                                <div class="storage-title">Stockage Cloud</div>
-                                <div class="storage-desc">Sécurisé et accessible partout</div>
-                            </div>
-                        </div>
-                        
-                        <div class="storage-option large"
-                             ng-class="{'storage-selected': $ctrl.user.storageType === 'local'}"
-                             ng-click="$ctrl.user.storageType = 'local'">
-                            <div class="storage-icon">
-                                <i class="fas fa-database"></i>
-                            </div>
-                            <div class="storage-info">
-                                <div class="storage-title">Stockage Local</div>
-                                <div class="storage-desc">Rapide et hors ligne</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <div class="settings-section danger-zone">
                     <h4 class="section-title text-red-400">Zone dangereuse</h4>
                     <div class="danger-actions">
@@ -559,14 +528,18 @@
         </div>
     </footer>
 
-    <!-- Import des scripts -->
+    <!-- Import AngularJS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js"></script>
-    <script src="app.js"></script>
+    
+    <!-- Firebase SDK v9 COMPAT (version compatible avec syntaxe classique) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    
+    <!-- Scripts de l'application -->
     <script src="firebase-auth.js"></script>
+    <script src="app.js"></script>
     
     <script>
         // Initialisation du menu hamburger
