@@ -8,18 +8,38 @@
     <meta name="email" content="karlluberisse1308@gmail.com">
     <meta name="theme-color" content="#6366f1">
     <meta name="keywords" content="secretvault, stockage, photos, images, sécurisé, cloud, local">
+    <!-- LOGO -->
+    <link rel="icon" href="secretvault.png" type="image/png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+     <script src="app.js"></script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <title>SecretVault - Stockage d'Images Sécurisé</title>
     <link rel="stylesheet" href="styles.css">
+     <!-- SCRIPTS EN LIGNE POUR DEBUG -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    
+    <script>
+        // Config Supabase INLINE
+        const SUPABASE_URL = 'https://iigkrlszbtoudfhvtuuc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpZ2tybHN6YnRvdWRmaHZ0dXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NTEzMjQsImV4cCI6MjA3NjEyNzMyNH0.6ufhAIWlkypszFlX5RKWPmYZZ6PioGfKqJ4KRMhm-G4';
+        
+        window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialisé');
+        
+        // Masquer le loader après 2 secondes
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+        }, 2000);
+    </script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen" ng-controller="MainController as $ctrl">
     <!-- Navigation -->
@@ -531,10 +551,15 @@
     <!-- Import AngularJS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase SDK - V2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
     
     <!-- Scripts de l'application -->
+    <script>
+        console.log('🔍 Vérification du chargement des scripts...');
+        console.log('Angular chargé:', typeof angular !== 'undefined');
+        console.log('Supabase chargé:', typeof window.supabase !== 'undefined');
+    </script>
     <script src="supabase-config.js"></script>
     <script src="app.js"></script>
     
