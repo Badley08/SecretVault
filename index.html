@@ -1,662 +1,1622 @@
 <!DOCTYPE html>
-<html lang="fr" ng-app="secretVaultApp">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SecretVault - Stockez vos images en toute sécurité avec un design élégant">
-    <meta name="author" content="Karlito">
-    <meta name="email" content="karlluberisse1308@gmail.com">
-    <meta name="theme-color" content="#6366f1">
-    <meta name="keywords" content="secretvault, stockage, photos, images, sécurisé, cloud, local">
-    <!-- LOGO -->
-    <link rel="icon" href="secretvault.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SecretVault - Votre coffre-fort photo sécurisé</title>
+    <meta name="description" content="SecretVault - Stockez et protégez vos photos privées avec notre application sécurisée. Chiffrement local et interface intuitive.">
+    <meta name="keywords" content="photos, stockage, sécurisé, privé, vault, galerie, images">
+    <meta name="author" content="SecretVault">
     
-    <!-- PWA Manifest -->
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#6c5ce7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="secretvault.png">
+    <link rel="apple-touch-icon" href="secretvault.png">
     
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-     <script src="app.js"></script>
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://votrenom.github.io/secretvault/">
+    <meta property="og:title" content="SecretVault - Coffre-fort Photo Sécurisé">
+    <meta property="og:description" content="Stockez et protégez vos photos privées avec notre application sécurisée">
+    <meta property="og:image" content="https://votrenom.github.io/secretvault/secretvault.png">
     
-    <!-- Font Awesome -->
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://votrenom.github.io/secretvault/">
+    <meta property="twitter:title" content="SecretVault - Coffre-fort Photo Sécurisé">
+    <meta property="twitter:description" content="Stockez et protégez vos photos privées avec notre application sécurisée">
+    <meta property="twitter:image" content="https://votrenom.github.io/secretvault/secretvault.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <title>SecretVault - Stockage d'Images Sécurisé</title>
-    <link rel="stylesheet" href="styles.css">
-     <!-- SCRIPTS EN LIGNE POUR DEBUG -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    
-    <script>
-        // Config Supabase INLINE
-        const SUPABASE_URL = 'https://iigkrlszbtoudfhvtuuc.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpZ2tybHN6YnRvdWRmaHZ0dXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NTEzMjQsImV4cCI6MjA3NjEyNzMyNH0.6ufhAIWlkypszFlX5RKWPmYZZ6PioGfKqJ4KRMhm-G4';
-        
-        window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialisé');
-        
-        // Masquer le loader après 2 secondes
-        setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-        }, 2000);
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-light: #6c5ce7;
+            --primary-dark: #a29bfe;
+            --secondary: #fd79a8;
+            --bg-light: #f7f7ff;
+            --text-light: #2d3436;
+            --card-light: #ffffff;
+            --shadow-light: rgba(149, 157, 165, 0.2);
+            --bg-dark: #1e272e;
+            --text-dark: #f5f6fa;
+            --card-dark: #2f3640;
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s ease;
+            --vault-blue: #2c3e50;
+            --vault-green: #27ae60;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-dark);
+            min-height: 100vh;
+            transition: var(--transition);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Login overlay styling */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-container {
+            background: rgba(30, 39, 46, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .logo-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            object-fit: cover;
+            border: 3px solid var(--primary-dark);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .auth-tab.active {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #a29bfe;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-dark);
+            background: rgba(162, 155, 254, 0.15);
+        }
+
+        .profile-picture-upload {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .profile-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-dark);
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-size: 24px;
+        }
+
+        .profile-upload-btn {
+            background: rgba(162, 155, 254, 0.2);
+            color: var(--primary-dark);
+            border: 2px dashed var(--primary-dark);
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            flex: 1;
+        }
+
+        .profile-upload-btn:hover {
+            background: rgba(162, 155, 254, 0.3);
+        }
+
+        #profile-picture-input {
+            display: none;
+        }
+
+        .auth-btn {
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            margin-top: 10px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(162, 155, 254, 0.4);
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(162, 155, 254, 0.6);
+        }
+
+        .auth-error {
+            color: #ff6b6b;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            height: 20px;
+        }
+
+        /* Main app styling - hidden by default */
+        .app-content {
+            display: none;
+        }
+
+        /* Header styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--card-dark);
+            box-shadow: 0 4px 6px var(--shadow-dark);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-dark);
+        }
+
+        .welcome-message {
+            font-size: 1rem;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .logo-app {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-app-img {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+        }
+
+        .logo-app h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hamburger menu styling */
+        .menu-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 8px rgba(162, 155, 254, 0.3);
+        }
+
+        .menu-btn span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: white;
+            margin: 2px 0;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .menu-btn.active span:nth-child(1) {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        .menu-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-btn.active span:nth-child(3) {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            left: -300px;
+            width: 280px;
+            height: calc(100vh - 70px);
+            background: var(--card-dark);
+            box-shadow: 5px 0 15px var(--shadow-dark);
+            transition: var(--transition);
+            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            border-radius: 0 20px 20px 0;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(162, 155, 254, 0.1);
+            border-left: 4px solid var(--primary-dark);
+        }
+
+        .sidebar-item i {
+            width: 30px;
+            font-size: 20px;
+            color: var(--primary-dark);
+            transition: var(--transition);
+        }
+
+        .sidebar-item span {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        /* Main content styling */
+        .container {
+            max-width: 530px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .intro {
+            text-align: center;
+            margin: 30px 0;
+            padding: 0 10px;
+        }
+
+        .intro h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .intro p {
+            color: var(--text-dark);
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-dark);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px var(--shadow-dark);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 30px;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            color: var(--text-dark);
+        }
+
+        .upload-area {
+            background: var(--card-dark);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px var(--shadow-dark);
+            border: 3px dashed var(--primary-dark);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px var(--shadow-dark);
+        }
+
+        .upload-area i {
+            font-size: 40px;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .upload-area p {
+            color: var(--text-dark);
+            opacity: 0.7;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(162, 155, 254, 0.4);
+            transition: var(--transition);
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(162, 155, 254, 0.6);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Gallery styling */
+        .gallery-section h2 {
+            text-align: center;
+            margin: 30px 0 20px;
+            font-size: 1.6rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-dark);
+        }
+
+        .gallery-section h2::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .photo-card {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow-dark);
+            aspect-ratio: 1/1;
+            transition: var(--transition);
+            background: var(--card-dark);
+            cursor: pointer;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px var(--shadow-dark);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .empty-gallery {
+            text-align: center;
+            padding: 40px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-gallery i {
+            font-size: 50px;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-gallery p {
+            font-size: 1rem;
+            opacity: 0.7;
+            color: var(--text-dark);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 2;
+        }
+
+        .photo-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        /* Ko-fi button styling */
+        .kofi-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 90;
+        }
+
+        .kofi-btn {
+            display: flex;
+            align-items: center;
+            background: #29abe0;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .kofi-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            background: #238fbc;
+        }
+
+        .kofi-btn i {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        /* Confirmation modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-dark);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 90%;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+
+        .modal-content p {
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .confirm-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Image preview modal */
+        .image-modal-content {
+            position: relative;
+            background: var(--card-dark);
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 80vh;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+        }
+
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--secondary);
+        }
+
+        .image-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .download-btn {
+            background: var(--primary-dark);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-dark);
+            color: var(--text-dark);
+            padding: 12px 25px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px var(--shadow-dark);
+            font-weight: 500;
+            z-index: 1001;
+            transition: transform 0.4s ease;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast i {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        .toast.success {
+            border-left: 4px solid #2ecc71;
+        }
+
+        .toast.error {
+            border-left: 4px solid #e74c3c;
+        }
+
+        /* Theme specific styles */
+        body.theme-blue {
+            --primary-dark: #3498db;
+            --secondary: #9b59b6;
+            --bg-dark: #2c3e50;
+            --card-dark: #34495e;
+        }
+
+        body.theme-green {
+            --primary-dark: #2ecc71;
+            --secondary: #f1c40f;
+            --bg-dark: #16a085;
+            --card-dark: #27ae60;
+        }
+
+        /* Install PWA prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--card-dark);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1002;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            max-width: 300px;
+        }
+
+        .install-prompt p {
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .install-btn {
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .close-install {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .upload-area {
+                padding: 15px;
+            }
+            
+            .upload-btn {
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+            
+            .kofi-btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .login-container {
+                padding: 25px;
+            }
+            
+            .form-group input {
+                padding: 12px 15px;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen" ng-controller="MainController as $ctrl">
-    <!-- Navigation -->
-    <nav class="bg-slate-800/80 backdrop-blur-lg border-b border-slate-700 sticky top-0 z-40">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <img src="secretvault.png" alt="SecretVault" class="h-8 w-8 rounded-lg" 
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzYzNjZmMSIvPgo8cGF0aCBkPSJNMTYgOEMxNCA4IDEzIDkgMTMgMTEuNUMxMyAxNCAxNCAxNSAxNiAxNUMxOCAxNSAxOSAxNCAxOSAxMS41QzE5IDkgMTggOCAxNiA4Wk0xNiAxN0MxNCAxNyAxMi41IDE4LjUgMTIuNSAyMC41TDEyLjUgMjZDMTIuNSAyNi41IDEzIDI3IDEzLjUgMjdIMTguNUMyMCAyNyAyMC41IDI2LjUgMjAuNSAyNkwyMC41IDIwLjVDMjAuNSAxOC41IDE5IDE3IDE2IDE3WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+'">
-                <h1 class="text-xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-                    SecretVault
-                </h1>
+<body>
+    <!-- Login overlay -->
+    <div class="login-overlay" id="login-overlay">
+        <div class="login-container">
+            <div class="logo">
+                <div class="logo-img" id="logo-img">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h1>SecretVault</h1>
             </div>
             
-            <!-- Menu Hamburger -->
-            <div class="relative">
-                <button id="menuBtn" class="p-2 rounded-xl hover:bg-slate-700/50 transition-all duration-300 group">
-                    <i class="fas fa-bars text-slate-300 group-hover:text-white text-lg"></i>
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="login-tab">Connexion</div>
+                <div class="auth-tab" id="register-tab">Créer un compte</div>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="auth-form" id="login-form">
+                <div class="form-group">
+                    <label for="login-username"><i class="fas fa-user"></i> Nom d'utilisateur</label>
+                    <input type="text" id="login-username" name="username" placeholder="Entrez votre nom d'utilisateur" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-key"></i> Mot de passe</label>
+                    <input type="password" id="login-password" name="password" placeholder="Entrez votre mot de passe" required>
+                </div>
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
                 </button>
+                <div id="login-error" class="auth-error"></div>
+            </form>
+            
+            <!-- Register Form -->
+            <form class="auth-form" id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label for="register-username"><i class="fas fa-user"></i> Nom d'utilisateur</label>
+                    <input type="text" id="register-username" name="username" placeholder="Choisissez un nom d'utilisateur" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password"><i class="fas fa-key"></i> Mot de passe</label>
+                    <input type="password" id="register-password" name="password" placeholder="Créez un mot de passe" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm"><i class="fas fa-key"></i> Confirmer le mot de passe</label>
+                    <input type="password" id="register-confirm" name="confirm" placeholder="Confirmez votre mot de passe" required>
+                </div>
                 
-                <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-2xl border border-slate-700 py-3 z-50">
-                    <a href="https://badley08.github.io/Karlito" target="_blank" 
-                       class="flex items-center px-4 py-3 text-slate-200 hover:bg-slate-700/50 transition-all group">
-                        <i class="fas fa-user-circle mr-3 text-purple-400 group-hover:text-purple-300"></i>
-                        <span>Mon Portfolio</span>
-                    </a>
-                    <a href="https://ko-fi.com/karlito08" target="_blank" 
-                       class="flex items-center px-4 py-3 text-slate-200 hover:bg-slate-700/50 transition-all group">
-                        <i class="fas fa-heart mr-3 text-pink-400 group-hover:text-pink-300"></i>
-                        <span>Me soutenir sur Ko-fi</span>
-                    </a>
+                <div class="profile-picture-upload">
+                    <div class="profile-preview" id="profile-preview">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-upload-btn" id="profile-upload-trigger">
+                        <i class="fas fa-camera"></i> Photo de profil
+                    </div>
+                    <input type="file" id="profile-picture-input" accept="image/*">
                 </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Écran de chargement -->
-    <div id="loading" class="fixed inset-0 bg-slate-900 z-50 flex flex-col justify-center items-center">
-        <div class="loader-spinner">
-            <div class="spinner-circle"></div>
-        </div>
-        <p class="text-slate-400 mt-6 text-lg">Chargement de SecretVault...</p>
-        <div class="mt-4 flex space-x-2">
-            <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-            <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-            <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-        </div>
-    </div>
-
-    <!-- Vue Authentification -->
-    <div id="authView" ng-if="!$ctrl.user" class="min-h-screen flex items-center justify-center px-4 py-8">
-        <div class="w-full max-w-md">
-            <!-- Logo Principal -->
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
-                    <i class="fas fa-lock text-white text-2xl"></i>
-                </div>
-                <h2 class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent mb-2">
-                    SecretVault
-                </h2>
-                <p class="text-slate-400">Stockage sécurisé d'images</p>
-            </div>
-
-            <!-- Formulaire de Connexion -->
-            <div id="loginForm" class="auth-form fade-in-up" ng-if="!$ctrl.showRegister">
-                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700/50 shadow-2xl">
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Connexion</h3>
-                    
-                    <form ng-submit="$ctrl.login()">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-slate-300 text-sm font-medium mb-2">Nom d'utilisateur</label>
-                                <input type="text" ng-model="$ctrl.loginData.username" 
-                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
-                                       placeholder="Votre nom d'utilisateur" required>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-slate-300 text-sm font-medium mb-2">Mot de passe</label>
-                                <input type="password" ng-model="$ctrl.loginData.password" 
-                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
-                                       placeholder="Votre mot de passe" required>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="w-full mt-6 bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all transform hover:-translate-y-0.5">
-                            Se connecter
-                        </button>
-                    </form>
-                    
-                    <p class="text-center mt-6 text-slate-400">
-                        Pas de compte? 
-                        <a href="#" ng-click="$ctrl.showRegister = true" class="text-indigo-400 hover:text-indigo-300 font-medium transition">Créer un compte</a>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Formulaire d'Inscription -->
-            <div id="registerForm" class="auth-form fade-in-up" ng-if="$ctrl.showRegister">
-                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl p-8 border border-slate-700/50 shadow-2xl">
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Créer un compte</h3>
-                    
-                    <form ng-submit="$ctrl.register()">
-                        <div class="space-y-4">
-                            <!-- Photo de profil -->
-                            <div>
-                                <label class="block text-slate-300 text-sm font-medium mb-3">Photo de profil</label>
-                                <div class="flex items-center space-x-4">
-                                    <div class="relative">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center overflow-hidden shadow-lg">
-                                            <img id="profilePreview" ng-src="{{$ctrl.profilePreview}}" 
-                                                 class="w-full h-full object-cover" 
-                                                 ng-if="$ctrl.profilePreview">
-                                            <i class="fas fa-user text-white text-xl" ng-if="!$ctrl.profilePreview"></i>
-                                        </div>
-                                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-camera text-white text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <input type="file" id="profilePhoto" accept="image/*" 
-                                           class="hidden">
-                                    <button type="button" onclick="document.getElementById('profilePhoto').click()"
-                                            class="flex-1 bg-slate-700/50 text-slate-300 px-4 py-3 rounded-xl border border-slate-600 hover:bg-slate-700 hover:text-white transition flex items-center justify-center space-x-2">
-                                        <i class="fas fa-upload"></i>
-                                        <span>Choisir une photo</span>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Nom d'utilisateur -->
-                            <div>
-                                <label class="block text-slate-300 text-sm font-medium mb-2">Nom d'utilisateur</label>
-                                <input type="text" ng-model="$ctrl.registerData.username" 
-                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
-                                       placeholder="Choisissez un nom d'utilisateur" required>
-                            </div>
-                            
-                            <!-- Mot de passe -->
-                            <div>
-                                <label class="block text-slate-300 text-sm font-medium mb-2">Mot de passe</label>
-                                <input type="password" ng-model="$ctrl.registerData.password" 
-                                       class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-white placeholder-slate-400"
-                                       placeholder="Créez un mot de passe sécurisé" required minlength="6">
-                            </div>
-                            
-                            <!-- Sélection du stockage -->
-                            <div class="pt-2">
-                                <label class="block text-slate-300 text-sm font-medium mb-3">Type de stockage préféré</label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div class="storage-option" 
-                                         ng-class="{'storage-selected': $ctrl.registerData.storageType === 'cloud'}"
-                                         ng-click="$ctrl.registerData.storageType = 'cloud'">
-                                        <div class="storage-icon">
-                                            <i class="fas fa-cloud"></i>
-                                        </div>
-                                        <div class="storage-info">
-                                            <div class="storage-title">Cloud</div>
-                                            <div class="storage-desc">Sécurisé</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="storage-option"
-                                         ng-class="{'storage-selected': $ctrl.registerData.storageType === 'local'}"
-                                         ng-click="$ctrl.registerData.storageType = 'local'">
-                                        <div class="storage-icon">
-                                            <i class="fas fa-database"></i>
-                                        </div>
-                                        <div class="storage-info">
-                                            <div class="storage-title">Local</div>
-                                            <div class="storage-desc">Rapide</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all transform hover:-translate-y-0.5">
-                            Créer mon compte
-                        </button>
-                    </form>
-                    
-                    <p class="text-center mt-6 text-slate-400">
-                        Déjà un compte? 
-                        <a href="#" ng-click="$ctrl.showRegister = false" class="text-indigo-400 hover:text-indigo-300 font-medium transition">Se connecter</a>
-                    </p>
-                </div>
-            </div>
+                
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-user-plus"></i> Créer mon compte
+                </button>
+                <div id="register-error" class="auth-error"></div>
+            </form>
         </div>
     </div>
 
-    <!-- Tableau de Bord Principal -->
-    <div id="dashboardView" ng-if="$ctrl.user" class="min-h-screen pb-8">
-        <div class="container mx-auto px-4 py-6">
-            <!-- En-tête du tableau de bord -->
-            <div class="bg-slate-800/30 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-slate-700/30 shadow-lg">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <div class="relative">
-                            <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center overflow-hidden shadow-lg">
-                                <img ng-src="{{$ctrl.user.profilePhoto}}" 
-                                     class="w-full h-full object-cover" 
-                                     ng-if="$ctrl.user.profilePhoto">
-                                <i class="fas fa-user text-white text-xl" ng-if="!$ctrl.user.profilePhoto"></i>
-                            </div>
-                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-slate-800"></div>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-white">Bonjour, {{$ctrl.user.username}}! 👋</h2>
-                            <div class="flex items-center space-x-2 mt-1">
-                                <span class="storage-badge cloud">
-                                    <i class="fas fa-cloud mr-1"></i>
-                                    Stockage Cloud
-                                </span>
-                                <span class="text-slate-400 text-sm">
-                                    • {{$ctrl.userFiles.length}} image(s)
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        <!-- Bouton Paramètres -->
-                        <button ng-click="$ctrl.showProfileSettings = true"
-                                class="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white transition-all group">
-                            <i class="fas fa-cog group-hover:rotate-90 transition-transform"></i>
-                        </button>
-                        
-                        <!-- Bouton Déconnexion -->
-                        <button ng-click="$ctrl.logout()"
-                                class="p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all group">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
+    <!-- Main app content (hidden until login) -->
+    <div class="app-content" id="app-content">
+        <!-- Header with hamburger menu -->
+        <header>
+            <div class="logo-app">
+                <div class="logo-app-img" id="app-logo">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h1>SecretVault</h1>
+            </div>
+            <div class="user-info">
+                <img class="user-avatar" id="user-avatar" src="" alt="Avatar">
+                <div class="welcome-message" id="welcome-message"></div>
+            </div>
+            <div class="menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </header>
+
+        <!-- Sidebar menu -->
+        <div class="sidebar">
+            <div class="sidebar-item" id="theme-toggle">
+                <i class="fas fa-palette"></i>
+                <span>Changer de thème</span>
+            </div>
+            <div class="sidebar-item" id="clear-all">
+                <i class="fas fa-trash-alt"></i>
+                <span>Tout Supprimer</span>
+            </div>
+            <div class="sidebar-item" id="backup-data">
+                <i class="fas fa-download"></i>
+                <span>Sauvegarder</span>
+            </div>
+            <div class="sidebar-item" id="restore-data">
+                <i class="fas fa-upload"></i>
+                <span>Restaurer</span>
+            </div>
+            <div class="sidebar-item" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="container">
+            <div class="intro">
+                <h2>Votre coffre-fort sécurisé</h2>
+                <p>Stockez et protégez vos photos privées en toute sécurité</p>
+            </div>
+
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <i class="fas fa-images"></i>
+                    <div class="number" id="photo-count">0</div>
+                    <div class="label">Photos</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-hdd"></i>
+                    <div class="number" id="storage-used">0 MB</div>
+                    <div class="label">Stockage utilisé</div>
                 </div>
             </div>
 
-            <!-- Statistiques Rapides -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="stat-card">
-                    <div class="stat-icon bg-blue-500/10 text-blue-400">
-                        <i class="fas fa-images"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-number">{{$ctrl.userFiles.length}}</div>
-                        <div class="stat-label">Images</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon bg-emerald-500/10 text-emerald-400">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-number">{{$ctrl.getTotalSize()}} MB</div>
-                        <div class="stat-label">Stockage</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon bg-amber-500/10 text-amber-400">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-number">Cloud</div>
-                        <div class="stat-label">Sécurité</div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon bg-purple-500/10 text-purple-400">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-number">{{$ctrl.selectedFiles.length}}</div>
-                        <div class="stat-label">Sélectionnés</div>
-                    </div>
-                </div>
+            <div class="upload-area">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Ajouter des photos</h3>
+                <p>Sélectionnez une ou plusieurs images (JPG, PNG) - Max 5MB</p>
+                <button class="upload-btn" id="upload-trigger">
+                    <i class="fas fa-plus"></i> Choisir des photos
+                </button>
+                <input type="file" id="file-input" accept="image/*" multiple>
             </div>
 
-            <!-- Actions Principales -->
-            <div class="flex flex-wrap gap-3 mb-6">
-                <button onclick="document.getElementById('fileUpload').click()"
-                        class="action-btn primary">
-                    <i class="fas fa-plus mr-2"></i>
-                    Ajouter des images
-                </button>
-                
-                <button ng-click="$ctrl.selectAllFiles()" 
-                        ng-class="{'bg-amber-500/20 text-amber-400 border-amber-400/30': $ctrl.selectedFiles.length > 0, 'bg-slate-700/50 text-slate-300 border-slate-600': $ctrl.selectedFiles.length === 0}"
-                        class="action-btn">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    Sélectionner ({{$ctrl.selectedFiles.length}})
-                </button>
-                
-                <button ng-click="$ctrl.downloadSelected()" 
-                        ng-disabled="$ctrl.selectedFiles.length === 0"
-                        class="action-btn" 
-                        ng-class="{'opacity-50 cursor-not-allowed': $ctrl.selectedFiles.length === 0}">
-                    <i class="fas fa-download mr-2"></i>
-                    Télécharger
-                </button>
-                
-                <button ng-click="$ctrl.deleteSelected()" 
-                        ng-disabled="$ctrl.selectedFiles.length === 0"
-                        class="action-btn danger"
-                        ng-class="{'opacity-50 cursor-not-allowed': $ctrl.selectedFiles.length === 0}">
-                    <i class="fas fa-trash mr-2"></i>
-                    Supprimer
-                </button>
+            <div class="gallery-section">
+                <h2>Votre Collection</h2>
+                <div class="gallery" id="gallery">
+                    <!-- Photos will be added here dynamically -->
+                </div>
             </div>
+        </div>
 
-            <!-- Zone de dépôt de fichiers -->
-            <div class="file-drop-zone mb-6" 
-                 ng-class="{'drag-over': $ctrl.isDragOver}"
-                 onclick="document.getElementById('fileUpload').click()">
-                <div class="drop-content">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-indigo-400 mb-3"></i>
-                    <h3 class="text-lg font-semibold text-white mb-2">Déposez vos images ici</h3>
-                    <p class="text-slate-400 text-sm">ou cliquez pour parcourir</p>
-                    <p class="text-xs text-slate-500 mt-2">Images uniquement - Maximum 10MB par fichier</p>
+        <!-- Ko-fi button -->
+        <div class="kofi-container">
+            <a href="https://ko-fi.com/karlito08" target="_blank" class="kofi-btn">
+                <i class="fas fa-coffee"></i> Supportez-moi
+            </a>
+        </div>
+
+        <!-- Install PWA prompt -->
+        <div class="install-prompt" id="install-prompt">
+            <p>Installer l'application pour une meilleure expérience</p>
+            <button class="install-btn" id="install-btn">Installer</button>
+            <button class="close-install" id="close-install">&times;</button>
+        </div>
+
+        <!-- Confirmation modal -->
+        <div class="modal" id="confirmation-modal">
+            <div class="modal-content">
+                <h3>Confirmer la suppression</h3>
+                <p>Êtes-vous sûr de vouloir supprimer toutes vos photos ? Cette action est irréversible.</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm-btn" id="confirm-delete">Supprimer</button>
+                    <button class="modal-btn cancel-btn" id="cancel-delete">Annuler</button>
                 </div>
-                <input type="file" id="fileUpload" multiple 
-                       accept="image/*" class="hidden">
             </div>
+        </div>
 
-            <!-- Galerie de fichiers -->
-            <div class="gallery-container">
-                <div class="gallery-header">
-                    <h3 class="text-lg font-semibold text-white">Mes images</h3>
-                    <div class="flex items-center space-x-4">
-                        <div class="view-toggle">
-                            <button ng-click="$ctrl.gridView = true" 
-                                    ng-class="{'active': $ctrl.gridView}"
-                                    class="view-btn">
-                                <i class="fas fa-th"></i>
-                            </button>
-                            <button ng-click="$ctrl.gridView = false" 
-                                    ng-class="{'active': !$ctrl.gridView}"
-                                    class="view-btn">
-                                <i class="fas fa-list"></i>
-                            </button>
-                        </div>
-                        <div class="sort-select">
-                            <select ng-model="$ctrl.sortBy" ng-change="$ctrl.sortFiles()"
-                                    class="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-1 text-slate-300 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                                <option value="name">Trier par nom</option>
-                                <option value="date">Trier par date</option>
-                                <option value="size">Trier par taille</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vue Grille -->
-                <div ng-if="$ctrl.gridView" class="gallery-grid">
-                    <div ng-repeat="file in $ctrl.userFiles" 
-                         class="gallery-item"
-                         ng-class="{'selected': $ctrl.isSelected(file)}"
-                         ng-click="$ctrl.toggleFileSelection(file)">
-                        <div class="item-thumbnail">
-                            <img ng-src="{{file.preview}}" alt="{{file.name}}">
-                            <div class="file-type-indicator image">
-                                <i class="fas fa-image"></i>
-                            </div>
-                            <div class="selection-overlay" ng-if="$ctrl.isSelected(file)">
-                                <i class="fas fa-check-circle text-white"></i>
-                            </div>
-                        </div>
-                        <div class="item-info">
-                            <div class="item-name" title="{{file.name}}">{{file.name | limitTo:15}}{{file.name.length > 15 ? '...' : ''}}</div>
-                            <div class="item-meta">
-                                <span class="item-size">{{file.size}} MB</span>
-                                <span class="item-date">{{file.date | date:'dd/MM'}}</span>
-                            </div>
-                        </div>
-                        <div class="item-actions">
-                            <button ng-click="$ctrl.downloadFile(file); $event.stopPropagation()"
-                                    class="action-icon download">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button ng-click="$ctrl.deleteFile(file); $event.stopPropagation()"
-                                    class="action-icon delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vue Liste -->
-                <div ng-if="!$ctrl.gridView" class="file-list">
-                    <div ng-repeat="file in $ctrl.userFiles" 
-                         class="file-list-item"
-                         ng-class="{'selected': $ctrl.isSelected(file)}"
-                         ng-click="$ctrl.toggleFileSelection(file)">
-                        <div class="file-icon image">
-                            <i class="fas fa-image"></i>
-                        </div>
-                        <div class="file-details">
-                            <div class="file-name">{{file.name}}</div>
-                            <div class="file-meta">
-                                <span class="file-size">{{file.size}} MB</span>
-                                <span class="file-date">{{file.date | date:'dd/MM/yyyy HH:mm'}}</span>
-                            </div>
-                        </div>
-                        <div class="file-actions">
-                            <button ng-click="$ctrl.downloadFile(file); $event.stopPropagation()"
-                                    class="list-action download">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button ng-click="$ctrl.deleteFile(file); $event.stopPropagation()"
-                                    class="list-action delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Message vide -->
-                <div ng-if="$ctrl.userFiles.length === 0" class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-folder-open text-5xl text-slate-500"></i>
-                    </div>
-                    <h3 class="empty-title">Aucune image</h3>
-                    <p class="empty-description">Commencez par ajouter vos premières images</p>
-                    <button onclick="document.getElementById('fileUpload').click()"
-                            class="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition">
-                        <i class="fas fa-plus mr-2"></i>Ajouter des images
+        <!-- Image preview modal -->
+        <div class="modal" id="image-modal">
+            <div class="image-modal-content">
+                <span class="close-modal">&times;</span>
+                <img id="modal-image" src="" alt="Preview">
+                <div class="image-actions">
+                    <button class="modal-btn download-btn" id="download-image">
+                        <i class="fas fa-download"></i> Télécharger
                     </button>
                 </div>
             </div>
         </div>
+
+        <!-- Toast notification -->
+        <div class="toast" id="toast"></div>
     </div>
 
-    <!-- Modal Paramètres du Profil -->
-    <div id="profileModal" ng-if="$ctrl.showProfileSettings" class="modal-overlay">
-        <div class="modal-content settings-modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Paramètres du profil</h3>
-                <button ng-click="$ctrl.showProfileSettings = false" class="modal-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="settings-section">
-                    <h4 class="section-title">Photo de profil</h4>
-                    <div class="photo-update">
-                        <div class="current-photo">
-                            <img ng-src="{{$ctrl.user.profilePhoto}}" ng-if="$ctrl.user.profilePhoto" 
-                                 class="profile-picture-large">
-                            <div class="default-photo-large" ng-if="!$ctrl.user.profilePhoto">
-                                <i class="fas fa-user text-slate-400 text-3xl"></i>
-                            </div>
-                        </div>
-                        <input type="file" id="updateProfilePhoto" accept="image/*" class="hidden">
-                        <button onclick="document.getElementById('updateProfilePhoto').click()"
-                                class="photo-update-btn">
-                            <i class="fas fa-camera mr-2"></i>
-                            Changer la photo
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="settings-section danger-zone">
-                    <h4 class="section-title text-red-400">Zone dangereuse</h4>
-                    <div class="danger-actions">
-                        <button ng-click="$ctrl.deleteAllFiles()" 
-                                class="danger-btn warning">
-                            <i class="fas fa-trash mr-2"></i>
-                            Supprimer toutes les images
-                        </button>
-                        <button ng-click="$ctrl.deleteAccount()" 
-                                class="danger-btn destructive">
-                            <i class="fas fa-user-slash mr-2"></i>
-                            Supprimer mon compte
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button ng-click="$ctrl.showProfileSettings = false" 
-                        class="btn-secondary">
-                    Annuler
-                </button>
-                <button ng-click="$ctrl.saveProfileSettings()" 
-                        class="btn-primary">
-                    Sauvegarder
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-slate-800/50 border-t border-slate-700/30 mt-12">
-        <div class="container mx-auto px-4 py-6">
-            <div class="text-center">
-                <p class="text-slate-400 text-sm">
-                    &copy; 2024 SecretVault. Tous droits réservés.
-                </p>
-                <div class="footer-credits mt-2">
-                    <a href="https://badley08.github.io/Karlito" target="_blank" class="text-slate-500 hover:text-slate-300 text-xs">
-                        Développé par Karlito
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Import AngularJS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    
-    <!-- Supabase SDK - V2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    
-    <!-- Scripts de l'application -->
     <script>
-        console.log('🔍 Vérification du chargement des scripts...');
-        console.log('Angular chargé:', typeof angular !== 'undefined');
-        console.log('Supabase chargé:', typeof window.supabase !== 'undefined');
-    </script>
-    <script src="supabase-config.js"></script>
-    <script src="app.js"></script>
-    
-    <script>
-        // Initialisation du menu hamburger
-        document.getElementById('menuBtn').addEventListener('click', function(e) {
-            e.stopPropagation();
-            const menu = document.getElementById('dropdownMenu');
-            menu.classList.toggle('hidden');
-        });
+        // User management
+        const users = JSON.parse(localStorage.getItem('secretvault_users')) || {};
+        
+        // DOM Elements
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const loginError = document.getElementById('login-error');
+        const registerError = document.getElementById('register-error');
+        const appContent = document.getElementById('app-content');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const userAvatar = document.getElementById('user-avatar');
+        const menuBtn = document.querySelector('.menu-btn');
+        const sidebar = document.querySelector('.sidebar');
+        const themeToggle = document.getElementById('theme-toggle');
+        const clearAllBtn = document.getElementById('clear-all');
+        const uploadTrigger = document.getElementById('upload-trigger');
+        const fileInput = document.getElementById('file-input');
+        const gallery = document.getElementById('gallery');
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const toast = document.getElementById('toast');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const closeModal = document.querySelector('.close-modal');
+        const downloadBtn = document.getElementById('download-image');
+        const logoutBtn = document.getElementById('logout-btn');
+        const photoCount = document.getElementById('photo-count');
+        const storageUsed = document.getElementById('storage-used');
+        const profilePreview = document.getElementById('profile-preview');
+        const profileUploadTrigger = document.getElementById('profile-upload-trigger');
+        const profilePictureInput = document.getElementById('profile-picture-input');
+        const installPrompt = document.getElementById('install-prompt');
+        const installBtn = document.getElementById('install-btn');
+        const closeInstall = document.getElementById('close-install');
+        const backupBtn = document.getElementById('backup-data');
+        const restoreBtn = document.getElementById('restore-data');
 
-        // Fermer le menu en cliquant ailleurs
-        document.addEventListener('click', function() {
-            const menu = document.getElementById('dropdownMenu');
-            if (!menu.classList.contains('hidden')) {
-                menu.classList.add('hidden');
-            }
-        });
+        // State variables
+        let photos = [];
+        let currentUser = localStorage.getItem('currentUser');
+        let currentTheme = localStorage.getItem('theme') || 'dark';
+        let currentPhoto = null;
+        let profilePicture = null;
+        let deferredPrompt;
 
-        // Gestion des fichiers
-        document.getElementById('fileUpload')?.addEventListener('change', function(event) {
-            const scope = angular.element(document.body).scope();
-            if (scope && scope.$ctrl) {
-                scope.$ctrl.handleFileUpload(event);
-                scope.$apply();
-            }
-        });
+        // Apply saved theme
+        document.body.classList.add(`theme-${currentTheme}`);
 
-        // Gestion de la photo de profil
-        document.getElementById('profilePhoto')?.addEventListener('change', function(event) {
-            const scope = angular.element(document.body).scope();
-            if (scope && scope.$ctrl) {
-                scope.$ctrl.handleProfilePhoto(event);
-                scope.$apply();
-            }
-        });
-
-        // Gestion de la mise à jour de la photo de profil
-        document.getElementById('updateProfilePhoto')?.addEventListener('change', function(event) {
-            const scope = angular.element(document.body).scope();
-            if (scope && scope.$ctrl) {
-                scope.$ctrl.updateProfilePhoto(event);
-                scope.$apply();
-            }
-        });
-
-        // Gestion du drag and drop
-        const dropZone = document.querySelector('.file-drop-zone');
-        if (dropZone) {
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, preventDefaults, false);
-            });
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, function() {
-                    const scope = angular.element(document.body).scope();
-                    if (scope && scope.$ctrl) {
-                        scope.$ctrl.isDragOver = true;
-                        scope.$apply();
-                    }
-                }, false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, function() {
-                    const scope = angular.element(document.body).scope();
-                    if (scope && scope.$ctrl) {
-                        scope.$ctrl.isDragOver = false;
-                        scope.$apply();
-                    }
-                }, false);
-            });
-
-            dropZone.addEventListener('drop', function(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                const scope = angular.element(document.body).scope();
-                if (scope && scope.$ctrl) {
-                    scope.$ctrl.handleFileDrop(files);
-                    scope.$apply();
-                }
-            }, false);
+        // Check if user is already logged in
+        if (currentUser) {
+            loadUserData();
+            showApp();
         }
 
-        // Service Worker pour PWA
+        // Auth tabs functionality
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            loginForm.style.display = 'flex';
+            registerForm.style.display = 'none';
+        });
+
+        registerTab.addEventListener('click', () => {
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+            registerForm.style.display = 'flex';
+            loginForm.style.display = 'none';
+        });
+
+        // Profile picture upload
+        profileUploadTrigger.addEventListener('click', () => {
+            profilePictureInput.click();
+        });
+
+        profilePictureInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (!file.type.match('image.*')) {
+                    showToast('Seules les images sont autorisées', 'error');
+                    return;
+                }
+                
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast('L\'image dépasse 2MB', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profilePicture = e.target.result;
+                    profilePreview.innerHTML = `<img src="${profilePicture}" alt="Profile Preview" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Login form submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Check credentials
+            if (users[username] && users[username].password === password) {
+                // Successful login
+                currentUser = username;
+                localStorage.setItem('currentUser', username);
+                loadUserData();
+                showApp();
+                showToast(`Bienvenue ${username} !`, 'success');
+            } else {
+                // Failed login
+                loginError.textContent = 'Nom d\'utilisateur ou mot de passe incorrect';
+                showToast('Identifiants incorrects', 'error');
+            }
+        });
+
+        // Register form submission
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            
+            // Validation
+            if (username.length < 3) {
+                registerError.textContent = 'Le nom d\'utilisateur doit contenir au moins 3 caractères';
+                return;
+            }
+            
+            if (password.length < 6) {
+                registerError.textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+                return;
+            }
+            
+            if (password !== confirm) {
+                registerError.textContent = 'Les mots de passe ne correspondent pas';
+                return;
+            }
+            
+            if (users[username]) {
+                registerError.textContent = 'Ce nom d\'utilisateur est déjà pris';
+                return;
+            }
+            
+            // Create new user
+            users[username] = {
+                password: password,
+                profilePicture: profilePicture,
+                createdAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('secretvault_users', JSON.stringify(users));
+            
+            // Auto login
+            currentUser = username;
+            localStorage.setItem('currentUser', username);
+            loadUserData();
+            showApp();
+            showToast(`Compte créé avec succès ! Bienvenue ${username}`, 'success');
+        });
+
+        // Load user data
+        function loadUserData() {
+            if (currentUser && users[currentUser]) {
+                photos = users[currentUser].photos || [];
+                if (users[currentUser].profilePicture) {
+                    userAvatar.src = users[currentUser].profilePicture;
+                }
+                updateStats();
+            }
+        }
+
+        // Save user data
+        function saveUserData() {
+            if (currentUser && users[currentUser]) {
+                users[currentUser].photos = photos;
+                localStorage.setItem('secretvault_users', JSON.stringify(users));
+                updateStats();
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            photoCount.textContent = photos.length;
+            
+            // Calculate storage used
+            let totalSize = 0;
+            photos.forEach(photo => {
+                // Approximate base64 size calculation
+                totalSize += (photo.dataUrl.length * 3) / 4;
+            });
+            
+            const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
+            storageUsed.textContent = `${sizeInMB} MB`;
+        }
+
+        // Show the main app
+        function showApp() {
+            loginOverlay.style.opacity = '0';
+            setTimeout(() => {
+                loginOverlay.style.display = 'none';
+                appContent.style.display = 'block';
+                welcomeMessage.textContent = currentUser;
+                if (users[currentUser].profilePicture) {
+                    userAvatar.src = users[currentUser].profilePicture;
+                }
+                initApp();
+            }, 500);
+        }
+
+        // Initialize the app
+        function initApp() {
+            // Render gallery
+            renderGallery();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Show install prompt if available
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                setTimeout(() => {
+                    installPrompt.style.display = 'flex';
+                }, 3000);
+            });
+        }
+
+        // PWA Install
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installPrompt.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        closeInstall.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+        });
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Hamburger menu toggle
+            menuBtn.addEventListener('click', () => {
+                menuBtn.classList.toggle('active');
+                sidebar.classList.toggle('active');
+            });
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Clear all photos
+            clearAllBtn.addEventListener('click', () => {
+                confirmationModal.style.display = 'flex';
+            });
+            
+            // Modal buttons
+            confirmDeleteBtn.addEventListener('click', clearAllPhotos);
+            cancelDeleteBtn.addEventListener('click', () => {
+                confirmationModal.style.display = 'none';
+            });
+            
+            // File upload
+            uploadTrigger.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', handleFileUpload);
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === confirmationModal) {
+                    confirmationModal.style.display = 'none';
+                }
+                if (e.target === imageModal) {
+                    imageModal.style.display = 'none';
+                }
+            });
+            
+            // Close image modal with button
+            closeModal.addEventListener('click', () => {
+                imageModal.style.display = 'none';
+            });
+            
+            // Logout button
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+            }
+            
+            // Backup and restore
+            if (backupBtn) {
+                backupBtn.addEventListener('click', backupData);
+            }
+            
+            if (restoreBtn) {
+                restoreBtn.addEventListener('click', () => {
+                    document.getElementById('restore-input').click();
+                });
+                
+                const restoreInput = document.createElement('input');
+                restoreInput.type = 'file';
+                restoreInput.id = 'restore-input';
+                restoreInput.accept = '.json';
+                restoreInput.style.display = 'none';
+                document.body.appendChild(restoreInput);
+                
+                restoreInput.addEventListener('change', handleRestore);
+            }
+        }
+
+        // Toggle between themes
+        function toggleTheme() {
+            const themes = ['dark', 'blue', 'green'];
+            const currentIndex = themes.indexOf(currentTheme);
+            const nextIndex = (currentIndex + 1) % themes.length;
+            currentTheme = themes[nextIndex];
+            
+            // Remove all theme classes
+            document.body.classList.remove('theme-dark', 'theme-blue', 'theme-green');
+            // Add current theme class
+            document.body.classList.add(`theme-${currentTheme}`);
+            
+            localStorage.setItem('theme', currentTheme);
+            
+            showToast(`Thème ${currentTheme} activé`, 'success');
+        }
+
+        // Handle file upload
+        function handleFileUpload(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+            
+            let newPhotosCount = 0;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Check if file is an image
+                if (!file.type.match('image.*')) {
+                    showToast('Seules les images sont autorisées', 'error');
+                    continue;
+                }
+                
+                // Check file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast(`L'image ${file.name} dépasse 5MB`, 'error');
+                    continue;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const photoData = {
+                        id: Date.now() + i,
+                        dataUrl: e.target.result,
+                        name: file.name,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    photos.push(photoData);
+                    saveUserData();
+                    renderGallery();
+                    newPhotosCount++;
+                    
+                    if (i === files.length - 1) {
+                        showToast(`${newPhotosCount} photo(s) ajoutée(s)`, 'success');
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // Reset file input
+            fileInput.value = '';
+        }
+
+        // Render gallery with photos
+        function renderGallery() {
+            if (photos.length === 0) {
+                gallery.innerHTML = `
+                    <div class="empty-gallery">
+                        <i class="fas fa-images"></i>
+                        <p>Aucune photo dans votre collection</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            gallery.innerHTML = '';
+            
+            photos.forEach(photo => {
+                const photoCard = document.createElement('div');
+                photoCard.className = 'photo-card';
+                photoCard.innerHTML = `
+                    <img src="${photo.dataUrl}" alt="Photo" data-id="${photo.id}">
+                    <button class="delete-btn" data-id="${photo.id}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                gallery.appendChild(photoCard);
+                
+                // Add click event to show image in modal
+                const img = photoCard.querySelector('img');
+                img.addEventListener('click', () => showImageModal(photo));
+                
+                // Add delete event listener
+                const deleteBtn = photoCard.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deletePhoto(photo.id);
+                });
+            });
+        }
+
+        // Show image in modal
+        function showImageModal(photo) {
+            modalImage.src = photo.dataUrl;
+            modalImage.alt = photo.name;
+            currentPhoto = photo;
+            
+            imageModal.style.display = 'flex';
+        }
+
+        // Download image
+        function downloadImage() {
+            if (!currentPhoto) return;
+            
+            const link = document.createElement('a');
+            link.href = currentPhoto.dataUrl;
+            link.download = currentPhoto.name || `photo-${currentPhoto.id}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Téléchargement commencé', 'success');
+        }
+
+        // Delete a single photo
+        function deletePhoto(id) {
+            photos = photos.filter(photo => photo.id !== id);
+            saveUserData();
+            renderGallery();
+            showToast('Photo supprimée', 'success');
+        }
+
+        // Clear all photos
+        function clearAllPhotos() {
+            photos = [];
+            saveUserData();
+            renderGallery();
+            confirmationModal.style.display = 'none';
+            showToast('Toutes les photos ont été supprimées', 'success');
+        }
+
+        // Backup data
+        function backupData() {
+            const userData = users[currentUser];
+            const dataStr = JSON.stringify(userData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `secretvault-backup-${currentUser}-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('Sauvegarde créée avec succès', 'success');
+        }
+
+        // Handle restore
+        function handleRestore(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    // Merge backup data with current user data
+                    if (users[currentUser]) {
+                        users[currentUser].photos = backupData.photos || [];
+                        localStorage.setItem('secretvault_users', JSON.stringify(users));
+                        loadUserData();
+                        renderGallery();
+                        showToast('Données restaurées avec succès', 'success');
+                    }
+                } catch (error) {
+                    showToast('Erreur lors de la restauration des données', 'error');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset input
+            e.target.value = '';
+        }
+
+        // Show toast notification
+        function showToast(message, type) {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            
+            if (type === 'success') {
+                toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            } else {
+                toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.reload();
+        }
+
+        // Setup download button
+        downloadBtn.addEventListener('click', downloadImage);
+
+        // Service Worker Registration for PWA
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
+            window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
+                    .then((registration) => {
                         console.log('SW registered: ', registration);
                     })
-                    .catch(function(registrationError) {
+                    .catch((registrationError) => {
                         console.log('SW registration failed: ', registrationError);
                     });
             });
